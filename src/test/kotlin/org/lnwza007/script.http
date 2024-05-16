@@ -1,0 +1,20 @@
+###
+
+WEBSOCKET ws://localhost:8080
+Content-Type: application/json
+
+[
+  "EVENT",
+  "Hello"
+]
+
+###
+
+GET http://localhost:8080
+accept: application/nostr+json
+
+
+###
+
+GET http://localhost:8080
+

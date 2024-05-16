@@ -9,7 +9,7 @@ plugins {
     id("io.micronaut.application") version "4.3.8"
     id("io.micronaut.test-resources") version "4.3.8"
     id("io.micronaut.aot") version "4.3.8"
-    id("nu.studer.jooq") version "8.2"
+    id("nu.studer.jooq") version "9.0"
     kotlin("plugin.serialization") version "1.9.23"
 }
 
@@ -23,7 +23,9 @@ repositories {
 
 dependencies {
 
-    jooqGenerator("org.postgresql:postgresql:42.3.9")
+    implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
+
+    jooqGenerator("org.postgresql:postgresql:42.5.4")
     runtimeOnly("org.postgresql:postgresql")
 
     // https://github.com/Kotlin/kotlinx.serialization
@@ -63,12 +65,12 @@ java {
 graalvmNative {
     binaries {
         all {
-            // * https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildOutput/?fbclid=IwAR007Rh7fYg-CJZywqhFM8PF5XDWPvgOfaV9txFDqpy6PWjtZp2bXpgncL0_aem_Af0UTqW_wKY5RFkebOwqrANSJn-d6fpSoJLMyra23KLgMNQuur3l75gjN29_Ymw1JYkeX7upxGBzGPFkJ4iRuojh
+            // * https://www.graalvm.org/latest/re2ference-manual/native-image/overview/BuildOutput/?fbclid=IwAR007Rh7fYg-CJZywqhFM8PF5XDWPvgOfaV9txFDqpy6PWjtZp2bXpgncL0_aem_Af0UTqW_wKY5RFkebOwqrANSJn-d6fpSoJLMyra23KLgMNQuur3l75gjN29_Ymw1JYkeX7upxGBzGPFkJ4iRuojh
             buildArgs.add("-H:+AddAllCharsets")
             buildArgs.add("-R:MaxHeapSize=4G")
-            //buildArgs.add("-J-XX:MaxRAMPercentage=60.0")
-            //buildArgs.add("--target=linux-x86-64-v3")
-            imageName.set("${project.name}-0.0.1-alpha")
+            buildArgs.add("-J-XX:MaxRAMPercentage=60.0")
+            buildArgs.add("--target=linux-x86-64-v3")  //
+            imageName.set("${project.name}-$version-alpha")
             javaLauncher.set(javaToolchains.launcherFor {
                 languageVersion.set(JavaLanguageVersion.of(21))
                 vendor.set(JvmVendorSpec.GRAAL_VM)
