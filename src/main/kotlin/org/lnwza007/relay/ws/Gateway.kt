@@ -1,7 +1,6 @@
 package org.lnwza007.relay.ws
 
 
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.MutableHttpResponse
@@ -17,29 +16,29 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.nio.charset.Charset
 
 
 @ServerWebSocket("/")
-class Gateway {
-
+class Gateway(
+    private val redis: RedisCacheFactory
+) {
 
     @OnOpen
-    fun onOpen(session: WebSocketSession?, @Header accept: String?, request: HttpRequest<*>?): MutableHttpResponse<String?>? {
-        println("open : $session")
-        println("request: $request")
-        println("accept: $accept")
-
-        val body = if (accept == "application/nostr+json") {
-            javaClass.getResource("/nip-11.json")?.readText()
+    suspend fun onOpen(session: WebSocketSession?, @Header accept: String?): MutableHttpResponse<String?>? {
+        val body: String = if (accept == "application/nostr+json") {
+            File("src/main/resources/relay_information_document.json").readText()
         } else {
-            javaClass.getResourceAsStream("/public/index.html")?.readBytes()?.toString(Charset.defaultCharset())
+            File("src/main/resources/public/index.html").readText(Charset.defaultCharset())
+
         }
 
-        val contentType = if (accept == "application/nostr+json") {
+        val contentType: String = if (accept == "application/nostr+json") {
             MediaType.APPLICATION_JSON
         } else {
             MediaType.TEXT_HTML
@@ -47,6 +46,16 @@ class Gateway {
 
         return HttpResponse.ok(body).contentType(contentType)
     }
+
+
+    // ฟังก์ชันสำหรับอ่านไฟล์จาก resource โดยใช้ coroutines และส่งคืนข้อมูลเป็น string
+    suspend fun readResource(path: String): String {
+        return withContext(Dispatchers.IO) {
+            // อ่านข้อมูลจากไฟล์และแปลงเป็น string
+            javaClass.getResourceAsStream(path)?.readBytes()?.toString(Charset.defaultCharset()) ?: ""
+        }
+    }
+
 
     @OnMessage
     fun onMessage(message: String, session: WebSocketSession) {
