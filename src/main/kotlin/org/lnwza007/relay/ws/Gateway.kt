@@ -24,27 +24,37 @@ import org.slf4j.LoggerFactory
 
 
 @ServerWebSocket("/")
-class Gateway @Inject constructor(private val relayInformation: RelayInformation) {
+class Gateway @Inject constructor(
+    private val nip11: RelayInformation
+) {
 
     private val LOG = LoggerFactory.getLogger(Gateway::class.java)
 
     @OnOpen
     fun onOpen(session: WebSocketSession?, @Header(HttpHeaders.ACCEPT) accept: String?): HttpResponse<String>? {
-        val contentType = if (accept == "application/nostr+json") {
-            MediaType.APPLICATION_JSON
+
+        if (session != null) {
+            LOG.info("open $session}")
         } else {
-            MediaType.TEXT_HTML
+            LOG.info("accept: $accept session: $session")
+        }
+
+
+        val contentType = when {
+            accept == "application/nostr+json" -> MediaType.APPLICATION_JSON
+            session == null -> MediaType.TEXT_HTML
+            else -> MediaType.TEXT_PLAIN
         }
 
         val data = runBlocking {
-            relayInformation.getRelayInformation(contentType)
+            nip11.loadRelayInfo(contentType)
         }
 
         return HttpResponse.ok(data).contentType(contentType)
     }
 
 
-    @OnMessage(maxPayloadLength = 65536)
+    @OnMessage
     fun onMessage(message: String, session: WebSocketSession) {
         LOG.info("Received message: \n$message")
 

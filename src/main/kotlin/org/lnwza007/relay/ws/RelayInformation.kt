@@ -17,13 +17,13 @@ class RelayInformation @Inject constructor(private val redis: RedisCacheFactory)
      * @param contentType: ประเภทของเนื้อหาที่ต้องการ (application/json หรือ text/html)
      * @return ข้อมูล relay information ที่ถูกดึงจาก Redis cache หรือไฟล์ระบบ
      */
-    suspend fun getRelayInformation(contentType: String): String = withContext(Dispatchers.IO) {
+    suspend fun loadRelayInfo(contentType: String): String = withContext(Dispatchers.IO) {
         // ดึงข้อมูลจาก Redis cache โดยใช้ contentType เป็น key
         redis.getCache(contentType) { it } ?: run {
             // หากไม่มีข้อมูลใน cache ให้โหลดจากไฟล์ระบบ
             val data = loadContent(contentType)
             // แคชข้อมูลที่โหลดมาใหม่ลง Redis พร้อมตั้งเวลาอายุเป็น 43,200 วินาที (12 ชั่วโมง)
-            redis.setCache(contentType, data, 43_200) { it }
+            redis.setCache(contentType, data, 200) { it }
             data
         }
     }
@@ -40,7 +40,7 @@ class RelayInformation @Inject constructor(private val redis: RedisCacheFactory)
             // ถ้า contentType เป็น text/html ให้โหลดไฟล์ HTML
             MediaType.TEXT_HTML -> loadFromFile("src/main/resources/public/index.html")
             // ถ้า contentType ไม่สนับสนุน ให้โยนข้อผิดพลาด IllegalArgumentException
-            else -> throw IllegalArgumentException("Unsupported content type: $contentType")
+            else -> "unsupported content"
         }
     }
 

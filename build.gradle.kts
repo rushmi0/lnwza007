@@ -23,6 +23,14 @@ repositories {
 
 dependencies {
 
+    // https://mvnrepository.com/artifact/fr.acinq.secp256k1/secp256k1-kmp-jni-jvm
+    implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.15.0")
+
+    // https://mvnrepository.com/artifact/fr.acinq.secp256k1/secp256k1-kmp-jvm
+    implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.15.0")
+
+
+
     implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
 
     jooqGenerator("org.postgresql:postgresql:42.5.4")

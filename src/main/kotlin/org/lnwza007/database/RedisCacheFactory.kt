@@ -8,16 +8,19 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.charset.Charset
 
 
 @Singleton
 class RedisCacheFactory @Inject constructor(
-    private val redisClient: RedisClient = RedisClient.create("redis://localhost:6379"),
+    private val redisClient: RedisClient = RedisClient.create("redis://localhost:63790"),
     private val connection: StatefulRedisConnection<String, String> = redisClient.connect(),
     private val redisCommands: RedisCommands<String, String> = connection.sync()
 ) {
+
+    private val LOG = LoggerFactory.getLogger(RedisCacheFactory::class.java)
 
     /**
      * ฟังก์ชันสำหรับ cache ข้อมูลลงใน Redis
@@ -36,7 +39,15 @@ class RedisCacheFactory @Inject constructor(
         // แปลงข้อมูลจาก T เป็น String โดยใช้ serializer ที่ส่งเข้ามา
         val serializedValue = serializer.invoke(value)
         // เก็บข้อมูลใน Redis พร้อมกำหนดเวลาหมดอายุ
-        redisCommands.setex(key, expirySeconds, serializedValue)
+        val result = redisCommands.setex(key, expirySeconds, serializedValue)
+
+        // บันทึกลง log ว่าข้อมูลถูก cache แล้วหรือไม่
+        if (result == "OK") {
+            LOG.info("Cached data with key: $key")
+        } else {
+            LOG.error("Failed to cache data with key: $key")
+        }
+        return@withContext result
     }
 
     /**
@@ -51,7 +62,13 @@ class RedisCacheFactory @Inject constructor(
     ): T? = withContext(Dispatchers.IO) {
         // ดึงข้อมูลจาก Redis โดยใช้คีย์
         val serializedValue = redisCommands.get(key)
-        // หากข้อมูลไม่เป็น null ให้ใช้ deserializer เพื่อแปลงกลับเป็น T
+
+        // บันทึกลง log ว่าข้อมูลถูกดึงออกมาหรือไม่
+        if (serializedValue != null) {
+            LOG.info("Retrieved cached data with key: $key")  // ข้อมูลถูกดึงออกมาสำเร็จ
+        } else {
+            LOG.warn("No cached data found for key: $key")  // ไม่มีข้อมูลใน cache
+        }
         return@withContext serializedValue?.let { deserializer.invoke(it) }
     }
 

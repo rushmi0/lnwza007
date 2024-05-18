@@ -20,12 +20,12 @@ services:
     networks:
       - dev_network
 
-  redis:
+  relay-cache:
     container_name: relay-redis
-    image: redis:latest
+    image: redis:7.2-alpine
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "63790:6379"
     networks:
       - dev_network
 

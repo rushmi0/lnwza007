@@ -22,3 +22,21 @@ GET http://localhost:8080
 
 GET http://localhost:8080
 accept: test
+
+
+###
+
+GET http://relay.damus.io
+accept: application/nostr+json
+
+###
+
+GET http://relay.nostr.band
+accept: application/nostr+json
+
+###
+
+WEBSOCKET wss://relay.nostr.band
+Content-Type: application/json
+
+["REQ", "", { "search": "orange" }, { "kinds": [1, 2], "search": "purple" }]
