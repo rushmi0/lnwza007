@@ -61,6 +61,7 @@ java {
     sourceCompatibility = JavaVersion.toVersion("21")
 }
 
+val platform = "linux-x86-64-v3"
 
 graalvmNative {
     binaries {
@@ -69,7 +70,7 @@ graalvmNative {
             buildArgs.add("-H:+AddAllCharsets")
             buildArgs.add("-R:MaxHeapSize=4G")
             buildArgs.add("-J-XX:MaxRAMPercentage=60.0")
-            buildArgs.add("--target=linux-x86-64-v3")  //
+            buildArgs.add("--target=$platform")
             imageName.set("${project.name}-$version-alpha")
             javaLauncher.set(javaToolchains.launcherFor {
                 languageVersion.set(JavaLanguageVersion.of(21))
@@ -123,9 +124,9 @@ jooq {
                 //logging = Logging.DEBUG
                 jdbc.apply {
                     driver = "org.postgresql.Driver"
-                    url = "jdbc:postgresql://localhost:54330/postgres"
-                    //url = "jdbc:postgresql://relay-postgres:54330/postgres"
-                    user = "postgres"
+                    url = "jdbc:postgresql://localhost:54330/nostr"
+                    //url = "jdbc:postgresql://relay-postgres:54330/nostr"
+                    user = "root"
                     password = "sql@min"
                     properties.add(Property().apply {
                         key = "ssl"

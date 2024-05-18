@@ -456,7 +456,7 @@
         }
 
         if (aName === 'none') {
-          return ''; // SVG/Firefox, unable to get animation name?
+          return ''; // SVG/Firefox, unable to getCache animation name?
         }
 
         return aName;

@@ -1,66 +1,52 @@
 package org.lnwza007.relay.ws
 
 
+import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.Header
 import io.micronaut.websocket.WebSocketSession
 import io.micronaut.websocket.annotation.OnClose
 import io.micronaut.websocket.annotation.OnMessage
 import io.micronaut.websocket.annotation.OnOpen
 import io.micronaut.websocket.annotation.ServerWebSocket
+import jakarta.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.nio.charset.Charset
 
 
 @ServerWebSocket("/")
-class Gateway(
-    private val redis: RedisCacheFactory
-) {
+class Gateway @Inject constructor(private val relayInformation: RelayInformation) {
+
+    private val LOG = LoggerFactory.getLogger(Gateway::class.java)
 
     @OnOpen
-    suspend fun onOpen(session: WebSocketSession?, @Header accept: String?): MutableHttpResponse<String?>? {
-        val body: String = if (accept == "application/nostr+json") {
-            File("src/main/resources/relay_information_document.json").readText()
-        } else {
-            File("src/main/resources/public/index.html").readText(Charset.defaultCharset())
-
-        }
-
-        val contentType: String = if (accept == "application/nostr+json") {
+    fun onOpen(session: WebSocketSession?, @Header(HttpHeaders.ACCEPT) accept: String?): HttpResponse<String>? {
+        val contentType = if (accept == "application/nostr+json") {
             MediaType.APPLICATION_JSON
         } else {
             MediaType.TEXT_HTML
         }
 
-        return HttpResponse.ok(body).contentType(contentType)
-    }
-
-
-    // ฟังก์ชันสำหรับอ่านไฟล์จาก resource โดยใช้ coroutines และส่งคืนข้อมูลเป็น string
-    suspend fun readResource(path: String): String {
-        return withContext(Dispatchers.IO) {
-            // อ่านข้อมูลจากไฟล์และแปลงเป็น string
-            javaClass.getResourceAsStream(path)?.readBytes()?.toString(Charset.defaultCharset()) ?: ""
+        val data = runBlocking {
+            relayInformation.getRelayInformation(contentType)
         }
+
+        return HttpResponse.ok(data).contentType(contentType)
     }
 
 
-    @OnMessage
+    @OnMessage(maxPayloadLength = 65536)
     fun onMessage(message: String, session: WebSocketSession) {
         LOG.info("Received message: \n$message")
-
 
         val messageObj = Json.decodeFromString<List<String>>(message)
 
@@ -86,6 +72,5 @@ class Gateway(
         LOG.info("close : $session")
     }
 
-    private val LOG = LoggerFactory.getLogger(Gateway::class.java)
 
 }

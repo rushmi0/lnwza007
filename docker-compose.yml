@@ -12,13 +12,15 @@ services:
     ports:
       - "54330:5432"
     environment:
+      POSTGRES_USER: root
       POSTGRES_PASSWORD: sql@min
+      POSTGRES_DB: nostr
     volumes:
-      - ./src/main/resources/db/sql:/docker-entrypoint-initdb.d/
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d/
     networks:
       - dev_network
 
-  relay-redis:
+  redis:
     container_name: relay-redis
     image: redis:latest
     restart: unless-stopped
@@ -26,3 +28,4 @@ services:
       - "6379:6379"
     networks:
       - dev_network
+

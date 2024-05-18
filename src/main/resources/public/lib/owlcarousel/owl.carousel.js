@@ -33,7 +33,7 @@
 		this.settings = null;
 
 		/**
-		 * Current options set by the caller including defaults.
+		 * Current options setCache by the caller including defaults.
 		 * @public
 		 */
 		this.options = $.extend({}, Owl.Defaults, options);
@@ -852,7 +852,7 @@
 				if (direction === 'left' && coordinate > value - pull && coordinate < value + pull) {
 					position = index;
 				// on a right pull, check on previous index
-				// to do so, subtract width from value and set position = index + 1
+				// to do so, subtract width from value and setCache position = index + 1
 				} else if (direction === 'right' && coordinate > value - width - pull && coordinate < value - width + pull) {
 					position = index + 1;
 				} else if (this.op(coordinate, '<', value)
@@ -1745,7 +1745,7 @@
 			}, this)
 		};
 
-		// set default options
+		// setCache default options
 		this._core.options = $.extend({}, AutoRefresh.Defaults, this._core.options);
 
 		// register event handlers
@@ -1870,7 +1870,7 @@
 			}, this)
 		};
 
-		// set the default options
+		// setCache the default options
 		this._core.options = $.extend({}, Lazy.Defaults, this._core.options);
 
 		// register event handler
@@ -1990,7 +1990,7 @@
 			}, this)
 		};
 
-		// set default options
+		// setCache default options
 		this._core.options = $.extend({}, AutoHeight.Defaults, this._core.options);
 
 		// register event handlers
@@ -2119,7 +2119,7 @@
 			}, this)
 		};
 
-		// set default options
+		// setCache default options
 		this._core.options = $.extend({}, Video.Defaults, this._core.options);
 
 		// register event handlers
@@ -2579,7 +2579,7 @@
 		// register event handlers
 		this._core.$element.on(this._handlers);
 
-		// set default options
+		// setCache default options
 		this._core.options = $.extend({}, Autoplay.Defaults, this._core.options);
 	};
 
@@ -2799,7 +2799,7 @@
 			}, this)
 		};
 
-		// set default options
+		// setCache default options
 		this._core.options = $.extend({}, Navigation.Defaults, this._core.options);
 
 		// register event handlers
@@ -3141,7 +3141,7 @@
 			}, this)
 		};
 
-		// set default options
+		// setCache default options
 		this._core.options = $.extend({}, Hash.Defaults, this._core.options);
 
 		// register the event handlers
