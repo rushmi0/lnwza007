@@ -1,12 +1,9 @@
 package org.lnwza007.util
 
 import fr.acinq.secp256k1.Secp256k1
-import kotlinx.serialization.json.Json
-import org.lnwza007.relay.modules.Event
 import org.lnwza007.util.ShiftTo.toHex
 
 object Schnorr {
-
 
     /**
      * ฟังก์ชัน sign ใช้ในการสร้างลายเซ็น Schnorr สำหรับข้อมูลที่กำหนด

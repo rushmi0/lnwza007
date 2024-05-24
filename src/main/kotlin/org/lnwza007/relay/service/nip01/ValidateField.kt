@@ -1,8 +1,10 @@
 package org.lnwza007.relay.service.nip01
 
+import jakarta.inject.Singleton
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.*
 
+@Singleton
 open class ValidateField {
 
     private fun areFieldsValid(
@@ -19,10 +21,7 @@ open class ValidateField {
         converter: (Map<String, JsonElement>) -> T
     ): T? {
         val isValid = areFieldsValid(map, validateFields)
-        if (!isValid) {
-            return null
-        }
-        return converter(map)
+        return if (isValid) converter(map) else null
     }
 
 

@@ -3,13 +3,8 @@ package org.lnwza007.relay.service.nip13
 import jakarta.inject.Singleton
 import java.math.BigInteger
 
-
 @Singleton
 object ProofOfWork {
-
-
-
-
 
     /**
      * ฟังก์ชัน countLeadingZeroes ใช้ในการนับจำนวนเลข 0 นำหน้าที่เป็นไปได้ของ hex
