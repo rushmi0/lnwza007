@@ -23,12 +23,16 @@ repositories {
 
 dependencies {
 
+    implementation("de.vandermeer:asciitable:0.3.2")
+
     // https://mvnrepository.com/artifact/fr.acinq.secp256k1/secp256k1-kmp-jni-jvm
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.15.0")
 
     // https://mvnrepository.com/artifact/fr.acinq.secp256k1/secp256k1-kmp-jvm
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.15.0")
 
+    // https://mvnrepository.com/artifact/fr.acinq.secp256k1/secp256k1-kmp
+    implementation("fr.acinq.secp256k1:secp256k1-kmp:0.15.0")
 
 
     implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
@@ -56,7 +60,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
     compileOnly("io.micronaut:micronaut-http-client")
-    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    //implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("io.micronaut:micronaut-http-client")
 }

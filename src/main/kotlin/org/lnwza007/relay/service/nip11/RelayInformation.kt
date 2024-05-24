@@ -1,4 +1,4 @@
-package org.lnwza007.relay.ws
+package org.lnwza007.relay.service.nip11
 
 import io.micronaut.http.MediaType
 import jakarta.inject.Inject
@@ -18,11 +18,16 @@ class RelayInformation @Inject constructor(private val redis: RedisCacheFactory)
      * @return ข้อมูล relay information ที่ถูกดึงจาก Redis cache หรือไฟล์ระบบ
      */
     suspend fun loadRelayInfo(contentType: String): String = withContext(Dispatchers.IO) {
+//        // ถ้า contentType เป็น text/plain ไม่ทำการ cache ข้อมูล
+//        if (contentType == MediaType.TEXT_PLAIN) {
+//            return@withContext loadContent(contentType)
+//        }
+
         // ดึงข้อมูลจาก Redis cache โดยใช้ contentType เป็น key
         redis.getCache(contentType) { it } ?: run {
             // หากไม่มีข้อมูลใน cache ให้โหลดจากไฟล์ระบบ
             val data = loadContent(contentType)
-            // แคชข้อมูลที่โหลดมาใหม่ลง Redis พร้อมตั้งเวลาอายุเป็น 43,200 วินาที (12 ชั่วโมง)
+            // แคชข้อมูลที่โหลดมาใหม่ลง Redis พร้อมตั้งเวลาอายุเป็น 200 วินาที
             redis.setCache(contentType, data, 200) { it }
             data
         }
@@ -34,13 +39,12 @@ class RelayInformation @Inject constructor(private val redis: RedisCacheFactory)
      * @return ข้อมูลที่โหลดจากไฟล์
      */
     private fun loadContent(contentType: String): String {
-        return when (contentType) {
+        return if (contentType == MediaType.APPLICATION_JSON) {
             // ถ้า contentType เป็น application/json ให้โหลดไฟล์ JSON
-            MediaType.APPLICATION_JSON -> loadFromFile("src/main/resources/relay_information_document.json")
+            loadFromFile("src/main/resources/relay_information_document.json")
+        } else {
             // ถ้า contentType เป็น text/html ให้โหลดไฟล์ HTML
-            MediaType.TEXT_HTML -> loadFromFile("src/main/resources/public/index.html")
-            // ถ้า contentType ไม่สนับสนุน ให้โยนข้อผิดพลาด IllegalArgumentException
-            else -> "unsupported content"
+            loadFromFile("src/main/resources/public/index.html")
         }
     }
 
@@ -50,5 +54,4 @@ class RelayInformation @Inject constructor(private val redis: RedisCacheFactory)
      * @return ข้อมูลที่อ่านจากไฟล์
      */
     private fun loadFromFile(path: String): String = File(path).readText(Charset.defaultCharset())
-
 }

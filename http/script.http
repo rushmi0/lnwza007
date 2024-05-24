@@ -4,9 +4,17 @@ WEBSOCKET ws://localhost:8080
 Content-Type: application/json
 
 [
-  "EVENT",
-  "Hello"
+  "REQ",
+  "",
+  {
+    "search": "orange"
+  },
+  {
+    "kinds": [1, 2],
+    "search": "purple"
+  }
 ]
+
 
 ###
 
@@ -39,4 +47,54 @@ accept: application/nostr+json
 WEBSOCKET wss://relay.nostr.band
 Content-Type: application/json
 
-["REQ", "", { "search": "orange" }, { "kinds": [1, 2], "search": "purple" }]
+[
+  "REQ",
+  "fffffffff",
+  { "search": "orange" },
+  { "kinds": [1, 2], "search": "purple" },
+  {
+    "authors": [
+      "e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"
+    ],
+    "kinds": [0],
+    "since": 1715181359
+  }
+]
+
+###
+
+WEBSOCKET ws://localhost:8080
+Content-Type: application/json
+
+[
+  "REQ",
+
+  {"search": "purple", "kinds": [1], "since": 1715181359}
+]
+
+###
+
+WEBSOCKET wss://relay.damus.io
+Content-Type: application/json
+
+["PING", "0102"]
+
+
+
+###
+WEBSOCKET wss://relay.damus.io
+Content-Type: application/json
+
+[
+  "EVENT",
+  {
+    "created_at":1716448321,
+    "kind":0,
+    "tags":[["alt","User profile for lnwza007"]],
+    "content":"{\"name\":\"lnwza007\",\"gender\":\"\",\"area\":\"\",\"picture\":\"https://image.nostr.build/552b5424ebd3c66be6f588e08c2f427e04423f11e80514414215b5ae00877b28.gif\",\"lud16\":\"rushmi0@getalby.com\",\"website\":\"https://github.com/rushmi0\",\"display_name\":\"lnwza007\",\"banner\":\"\",\"about\":\"แดดกรุงเทพที่ร้อนจ้า ยังแพ้ตัวข้าที่ร้อน sat\"}",
+    "pubkey":"e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3",
+    "id":"ecfdf5d329ae69bdca40f04a33a8f8447b83824f958a8db926430cd8b2aeb350",
+    "sig":"6a7898997ceb936fb6f660848baf8185f84ab22ff45aa3fc36eabad577bb4fae739bfdcd3d428d52146c6feaf9264bbc8f82121ddb8eeb85ce242ff79a1b0948"
+  }
+]
+
