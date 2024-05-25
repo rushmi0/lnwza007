@@ -1,5 +1,6 @@
 package org.lnwza007.relay.service.nip13
 
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.math.BigInteger
 
@@ -54,7 +55,7 @@ object ProofOfWork {
 
 
 fun main() {
-    val difficulty = 21
+    val difficulty = 23
 
     val workList = listOf(
         "000000bc2766a12eb379a84e5c25ee4bbdc0ebd87f462f956524bb6028556c5d",
@@ -68,7 +69,7 @@ fun main() {
         "0000a832c414db74a1cc66894989d2e91851ec3e718b278dd5bea076fc878134",
         "000003bdcd6ee095997816d13674fe1c64cff5e7497efb0d27d02964fa9984da",
         "000000000000003bb725c35fb13e348b0b5b27425c9fa151d681b5cad81c070d",
-
+        "0000005b0fc51e70b66db99ba1708b1a1b008c30db35d19d35146b3e09756029"
     )
 
     workList.forEach { index ->

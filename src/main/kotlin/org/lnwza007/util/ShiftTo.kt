@@ -49,7 +49,7 @@ object ShiftTo {
      * ฟังก์ชัน toJsonString ใช้ในการแปลงข้อมูลใดๆเป็นสตริง JSON
      * @return สตริง JSON ที่เป็นผลลัพธ์จากการแปลง Object
      */
-    fun Any.toJsonString() : String {
+    fun Any.toJsonString(): String {
         return jacksonObjectMapper().writeValueAsString(this)
     }
 

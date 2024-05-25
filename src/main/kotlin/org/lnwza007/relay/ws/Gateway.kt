@@ -13,12 +13,14 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
+import org.lnwza007.relay.service.nip01.BasicProtocolFlow
 import org.lnwza007.relay.service.nip11.RelayInformation
 import org.lnwza007.util.ShiftTo.toJsonElementMap
 import org.slf4j.LoggerFactory
 
 @ServerWebSocket("/")
 class Gateway @Inject constructor(
+    private val nip01: BasicProtocolFlow,
     private val nip11: RelayInformation
 ) {
 
@@ -60,13 +62,9 @@ class Gateway @Inject constructor(
     @OnMessage
     fun onMessage(message: String, session: WebSocketSession) {
 
+        val msg = message.toJsonElementMap()
 
-        val TYPE_OF_MESSAGES = arrayOf(
-            "",
-            "",
-            ""
-        )
-
+        println(msg.keys)
 
 
         val jsonElement = Json.parseToJsonElement(message)
