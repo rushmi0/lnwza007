@@ -12,9 +12,9 @@ object ProofOfWork {
      * @param hex ค่า Event ID เป็นรหัสฐานสิบหก
      * @return ระดับความยากของ Proof of Work ในรูปของจำนวนเต็ม
      */
-    private fun difficulty(hex: String): Int {
+    private fun difficulty(hex: String): Long {
         val digest = BigInteger(hex, 16).toByteArray()
-        return 256 - digest.size * 8 + digest[0].countLeadingZeroBits()
+        return 256 - digest.size * 8 + digest[0].countLeadingZeroBits().toLong()
     }
 
     /**
