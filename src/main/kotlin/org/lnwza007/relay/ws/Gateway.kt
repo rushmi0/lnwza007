@@ -13,14 +13,12 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
-import org.lnwza007.relay.service.nip01.BasicProtocolFlow
 import org.lnwza007.relay.service.nip11.RelayInformation
-import org.lnwza007.util.ShiftTo.toJsonElementMap
 import org.slf4j.LoggerFactory
 
 @ServerWebSocket("/")
 class Gateway @Inject constructor(
-    private val nip01: BasicProtocolFlow,
+    //private val nip01: BasicProtocolFlow,
     private val nip11: RelayInformation
 ) {
 
@@ -61,29 +59,25 @@ class Gateway @Inject constructor(
 
     @OnMessage
     fun onMessage(message: String, session: WebSocketSession) {
+        val element = Json.parseToJsonElement(message)
+        val type = element.jsonArray[0] as String
+        val subscriptionId = element.jsonArray[1]
+        val command = element.jsonArray[2]
 
-        val msg = message.toJsonElementMap()
 
-        println(msg.keys)
+        when (type) {
+            "REQ" -> {}
+            "EVENT" -> {}
+            "CLOSE" -> {}
+            else -> session.sendSync("message: $message $subscriptionId, $type")
+        }
 
-
-        val jsonElement = Json.parseToJsonElement(message)
 //        LOG.info("json Element 1: ${jsonElement.jsonArray[0]}")
 //        LOG.info("json Element 2: ${jsonElement.jsonArray[1]}")
         //LOG.info("json Element 3: ${jsonElement.jsonArray[2]}")
-        LOG.info("json Element : ${jsonElement.jsonArray}")
-        LOG.info("json Element size: ${jsonElement.jsonArray.size}")
+        LOG.info("json Element : ${element.jsonArray}")
+        LOG.info("json Element size: ${element.jsonArray.size}")
 
-//        val map = jsonElement.jsonArray[2].toString().toJsonElementMap()
-//        //val queue2 = buildUpdateQueue(map)
-//        LOG.info("> ${map.entries.map { it.value }}")
-//        val data = map.entries.map { it.value }
-//        session.sendAsync(data.toString())
-//
-//        val type = jsonElement.jsonArray[0]
-//        val subID = jsonElement.jsonArray[1]
-//        LOG.info("type : $type")
-//        LOG.info("subscription_id : $subID")
 
     }
 

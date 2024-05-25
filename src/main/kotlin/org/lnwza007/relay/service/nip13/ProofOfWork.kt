@@ -1,54 +1,29 @@
 package org.lnwza007.relay.service.nip13
 
-import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.math.BigInteger
 
 @Singleton
 object ProofOfWork {
 
+
     /**
-     * ฟังก์ชัน countLeadingZeroes ใช้ในการนับจำนวนเลข 0 นำหน้าที่เป็นไปได้ของ hex
-     * @param hex สตริงที่เป็นฐาน 16 ที่ต้องการนับจำนวนเลข 0 นำหน้า
-     * @return จำนวนเลข 0 นำหน้าที่พบใน hex
+     * ฟังก์ชัน difficulty ใช้ในการคำนวณระดับความยากของ Proof of Work จากค่าฮาชของของ Event (hex)
+     * @param hex ค่า Event ID เป็นรหัสฐานสิบหก
+     * @return ระดับความยากของ Proof of Work ในรูปของจำนวนเต็ม
      */
-    private fun countLeadingZeroes(hex: String): Int {
-        var count = 0
-        for (char in hex) {
-            val nibble = char.toString().toInt(16)
-            if (nibble == 0) {
-                count += 4
-            } else {
-                count += Integer.numberOfLeadingZeros(nibble) - 28
-                break
-            }
-        }
-        return count
+    private fun difficulty(hex: String): Int {
+        val digest = BigInteger(hex, 16).toByteArray()
+        return 256 - digest.size * 8 + digest[0].countLeadingZeroBits()
     }
 
     /**
-     * ฟังก์ชัน verifyProofOfWork ใช้ในการตรวจสอบความถูกต้องของ Proof of Work
-     * @param hex สตริงที่เป็นฐาน 16 ของค่า hash ที่ต้องการตรวจสอบ
-     * @param difficulty ความยากของ Proof of Work ในรูปของจำนวนเลข 0 นำหน้าที่ต้องการ
-     * @return ผลลัพธ์ของการตรวจสอบเป็น Boolean (true ถ้าเป็นค่า hash ที่ถูกต้อง, false ถ้าไม่ถูกต้อง)
+     * ฟังก์ชัน checkProofOfWork ใช้ในการตรวจสอบว่า Proof of Work มีความยากตามที่กำหนดหรือไม่
+     * @param hex ค่า Event ID เป็นรหัสฐานสิบหก
+     * @param difficultyTarget ระดับความยากของ Proof of Work ที่ต้องการตรวจสอบ
+     * @return true หาก Proof of Work มีความยากตามที่กำหนด, false หากไม่มีความยาก
      */
-    private fun verifyProofOfWork(hex: String, difficulty: Int): Boolean {
-        val target = BigInteger.ONE.shiftLeft(256 - difficulty)
-        val hash = BigInteger(hex, 16)
-        return hash <= target
-    }
-
-    /**
-     * ฟังก์ชัน checkProofOfWork ใช้ในการตรวจสอบความถูกต้องของ Proof of Work
-     * @param hex สตริงที่เป็นฐาน 16 ของค่า hash ที่ต้องการตรวจสอบ
-     * @param difficulty ความยากของ Proof of Work ในรูปของจำนวนเลข 0 นำหน้าที่ต้องการ
-     * @return คู่ค่าที่ประกอบด้วย (จำนวนเลข 0 นำหน้าที่พบใน hex, ความถูกต้องของ Proof of Work)
-     */
-    fun checkProofOfWork(hex: String, difficulty: Int): Pair<Int, Boolean> {
-        val leadingZeroes = countLeadingZeroes(hex)
-        val isValid = leadingZeroes >= difficulty && verifyProofOfWork(hex, difficulty)
-        return Pair(leadingZeroes, isValid)
-    }
+    fun checkProofOfWork(hex: String, difficultyTarget: Int): Boolean = difficulty(hex) >= difficultyTarget
 
 
 }
@@ -69,11 +44,13 @@ fun main() {
         "0000a832c414db74a1cc66894989d2e91851ec3e718b278dd5bea076fc878134",
         "000003bdcd6ee095997816d13674fe1c64cff5e7497efb0d27d02964fa9984da",
         "000000000000003bb725c35fb13e348b0b5b27425c9fa151d681b5cad81c070d",
-        "0000005b0fc51e70b66db99ba1708b1a1b008c30db35d19d35146b3e09756029"
+        "0000005b0fc51e70b66db99ba1708b1a1b008c30db35d19d35146b3e09756029",
+        "000000000e9d97a1ab09fc381030b346cdd7a142ad57e6df0b46dc9bef6c7e2d"
     )
 
     workList.forEach { index ->
         val isValid = ProofOfWork.checkProofOfWork(index, difficulty)
         println("Hex: $index, Valid PoW: $isValid")
     }
+
 }

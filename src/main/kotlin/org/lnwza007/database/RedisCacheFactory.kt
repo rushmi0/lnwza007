@@ -65,9 +65,9 @@ class RedisCacheFactory @Inject constructor(
 
         // บันทึกลง log ว่าข้อมูลถูกดึงออกมาหรือไม่
         if (serializedValue != null) {
-            LOG.info("Retrieved cached data with key: $key")  // ข้อมูลถูกดึงออกมาสำเร็จ
+            LOG.info("Retrieved cached data with key: $key")
         } else {
-            LOG.warn("No cached data found for key: $key")  // ไม่มีข้อมูลใน cache
+            LOG.warn("No cached data found for key: $key")
         }
         return@withContext serializedValue?.let { deserializer.invoke(it) }
     }

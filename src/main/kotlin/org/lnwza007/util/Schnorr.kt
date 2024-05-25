@@ -2,9 +2,6 @@ package org.lnwza007.util
 
 import fr.acinq.secp256k1.Secp256k1
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.service.nip01.Transform.toEvent
 import org.lnwza007.util.ShiftTo.fromHex
