@@ -48,22 +48,29 @@ object Transform : Validation() {
     }
 
     /**
-     * ฟังก์ชัน toFiltersX (Extension function) ที่ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ FiltersX
+     * ฟังก์ชัน toFiltersX (Extension function) ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ FiltersX
      * @receiver Map<String, JsonElement> ข้อมูล JSON ที่ต้องการแปลง
-     * @return ออบเจ็กต์ FiltersX ที่ได้จากการแปลงข้อมูล หรือ null หากข้อมูลไม่ตรงกับนโยบาย
+     * @return คู่ของข้อความแจ้งเตือนและออบเจ็กต์ FiltersX หากข้อมูลไม่ตรงกับนโยบาย และ null ถ้าไม่มีข้อความแจ้งเตือน
      */
-    fun Map<String, JsonElement>.toFiltersX(): FiltersX? {
-        return mapToObject(this, FiltersXValidateField.entries.toTypedArray(), ::convertToFiltersXObject)
+    fun Map<String, JsonElement>.toFiltersX(): Array<Any?> {
+        // เรียกใช้ฟังก์ชัน mapToObject เพื่อแปลงข้อมูล JSON เป็น FiltersX ตามนโยบายที่กำหนด
+        val (errorMsg, objectFiltersX) = mapToObject(this, FiltersXValidateField.entries.toTypedArray(), ::convertToFiltersXObject)
+        // คืนค่าคู่ของข้อความแจ้งเตือนและออบเจ็กต์ FiltersX
+        return arrayOf(errorMsg, objectFiltersX)
     }
 
     /**
-     * ฟังก์ชัน toEvent (Extension function) ที่ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ Event
+     * ฟังก์ชัน toEvent (Extension function) ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ Event
      * @receiver Map<String, JsonElement> ข้อมูล JSON ที่ต้องการแปลง
-     * @return ออบเจ็กต์ Event ที่ได้จากการแปลงข้อมูล หรือ null หากข้อมูลไม่ตรงกับนโยบาย
+     * @return คู่ของข้อความแจ้งเตือนและออบเจ็กต์ Event หากข้อมูลไม่ตรงกับนโยบาย และ null ถ้าไม่มีข้อความแจ้งเตือน
      */
-    fun Map<String, JsonElement>.toEvent(): Event? {
-        return mapToObject(this, EventValidateField.entries.toTypedArray(), ::convertToEventObject)
+    fun Map<String, JsonElement>.toEvent(): Array<Any?> {
+        // เรียกใช้ฟังก์ชัน mapToObject เพื่อแปลงข้อมูล JSON เป็น Event ตามนโยบายที่กำหนด
+        val (errorMsg, objectEvent) = mapToObject(this, EventValidateField.entries.toTypedArray(), ::convertToEventObject)
+        // คืนค่าคู่ของข้อความแจ้งเตือนและออบเจ็กต์ Event
+        return arrayOf(errorMsg, objectEvent)
     }
+
 
 
 }

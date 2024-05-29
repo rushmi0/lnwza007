@@ -13,21 +13,21 @@ import org.slf4j.LoggerFactory
 
 class BasicProtocolFlow @Inject constructor(
 //    private val nip09: EventDeletion,
-//    private val nip13: ProofOfWork
+//    private val nip13: Proo1fOfWork
 ) {
 
 
     fun onEvent(mag: String, session: WebSocketSession) {
 
-        val event: Event? = mag.toJsonElementMap().toEvent()
+        val (warn, event) = mag.toJsonElementMap().toEvent()
 
         LOG.info("Event: $event")
         LOG.info("session: $session")
     }
 
     fun onRequest(mag: String, subscriptionId: String, session: WebSocketSession) {
-        val filter: FiltersX? = mag.toJsonElementMap().toFiltersX()
-        LOG.info("Filter: $filter")
+        val filter = mag.toJsonElementMap().toFiltersX()
+        LOG.info("Filter: ${filter[1]}")
         LOG.info("Subscription ID: $subscriptionId session: $session")
     }
 

@@ -84,7 +84,7 @@ Content-Type: application/json
 [
   "EVENT",
   {
-    "created_at":1716448321,
+    "created_at":"1716448321",
     "kind":0,
     "tags":[["alt","User profile for lnwza007"]],
     "content":"{\"name\":\"lnwza007\",\"gender\":\"\",\"area\":\"\",\"picture\":\"https://image.nostr.build/552b5424ebd3c66be6f588e08c2f427e04423f11e80514414215b5ae00877b28.gif\",\"lud16\":\"rushmi0@getalby.com\",\"website\":\"https://github.com/rushmi0\",\"display_name\":\"lnwza007\",\"banner\":\"\",\"about\":\"แดดกรุงเทพที่ร้อนจ้า ยังแพ้ตัวข้าที่ร้อน sat\"}",
@@ -137,7 +137,7 @@ Content-Type: application/json
 
 
 ###
-
+# ทดสอบให้แจ้งปัญหา
 WEBSOCKET ws://localhost:8080
 Content-Type: application/json
 
@@ -166,7 +166,7 @@ Content-Type: application/json
 ]
 
 ###
-
+# ทดสอบให้แจ้งปัญหา
 WEBSOCKET ws://localhost:8080
 Content-Type: application/json
 

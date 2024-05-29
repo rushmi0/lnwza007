@@ -69,7 +69,7 @@ internal class ValidationTest {
 
         val result = map.toFiltersX()
 
-        val expected = FiltersX(
+        val objFiltersX = FiltersX(
             setOf("e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"),
             null,
             setOf(4),
@@ -78,6 +78,8 @@ internal class ValidationTest {
             null,
             null
         )
+
+        val expected = Pair(null, objFiltersX)
 
         assertEquals(expected, result)
     }
@@ -109,12 +111,8 @@ internal class ValidationTest {
               "sig":"954c662c9ee29ccad8a1f30d22b9a5cefcea774f72428ec7344b65e4f31fff24fc4dd0b7874a4d10a1a4c012de013df19a7c33018dda5f1207280f9a28193498"
            }
         """.trimIndent()
-        val map = jsonString.toJsonElementMap()
 
-        val result = map.toEvent()
-
-        println(result)
-        println(result?.createAt)
+        val result = jsonString.toJsonElementMap().toEvent()
 
         val expected = Event(
             id = "0000005b0fc51e70b66db99ba1708b1a1b008c30db35d19d35146b3e09756029",
@@ -122,9 +120,13 @@ internal class ValidationTest {
             createAt = 1716617176,
             content = "My custom content",
             kind = 1,
-            tags = listOf(listOf("nonce", "19735841", "23")),
-            signature = "284622fc0a3f4f1303455d5175f7ba962a3300d136085b9566801bc2e0699de0c7e31e44c81fb40ad9049173742e904713c3594a1da0fc5d2382a25c11aba977"
+            tags = listOf(
+                listOf("nonce", "19735841", "23")
+            ),
+            signature = "954c662c9ee29ccad8a1f30d22b9a5cefcea774f72428ec7344b65e4f31fff24fc4dd0b7874a4d10a1a4c012de013df19a7c33018dda5f1207280f9a28193498"
         )
-        assertEquals(expected, result)
+
+        assertNull(result[0])
+        assertEquals(expected, result[1])
     }
 }
