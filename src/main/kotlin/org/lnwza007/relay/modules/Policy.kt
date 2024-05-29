@@ -1,8 +1,10 @@
 package org.lnwza007.relay.modules
 
+
 interface NostrFieldTypeProvider {
     val fieldType: Class<*>
 }
+
 
 interface NostrField : NostrFieldTypeProvider {
     val fieldName: String
@@ -25,6 +27,7 @@ enum class FiltersXValidateField(
     SEARCH("search", String::class.java)
 }
 
+
 enum class EventValidateField(
     override val fieldName: String,
     override val fieldType: Class<*>,
@@ -39,4 +42,3 @@ enum class EventValidateField(
     TAGS("tags", List::class.java, List::class.java, String::class.java),
     SIGNATURE("sig", String::class.java)
 }
-

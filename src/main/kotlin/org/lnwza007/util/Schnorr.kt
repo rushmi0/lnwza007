@@ -1,9 +1,11 @@
 package org.lnwza007.util
 
 import fr.acinq.secp256k1.Secp256k1
+import jakarta.inject.Singleton
 import org.lnwza007.util.ShiftTo.fromHex
 import org.lnwza007.util.ShiftTo.toHex
 
+@Singleton
 object Schnorr {
 
     /**

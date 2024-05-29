@@ -11,7 +11,7 @@ import org.lnwza007.relay.modules.FiltersXValidateField
  * Transform ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ที่สามารถนำไปใช้ต่อได้ง่าย
  */
 @Singleton
-object Transform : ValidateField() {
+object Transform : Validation() {
 
     /**
      * ฟังก์ชัน convertToFiltersXObject ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ FiltersX

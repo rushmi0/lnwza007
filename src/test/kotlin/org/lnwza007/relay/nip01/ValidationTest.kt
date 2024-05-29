@@ -11,12 +11,12 @@ import org.lnwza007.relay.modules.FiltersX
 import org.lnwza007.relay.modules.FiltersXValidateField
 import org.lnwza007.relay.service.nip01.Transform.toEvent
 import org.lnwza007.relay.service.nip01.Transform.toFiltersX
-import org.lnwza007.relay.service.nip01.ValidateField
+import org.lnwza007.relay.service.nip01.Validation
 import org.lnwza007.util.ShiftTo.toJsonElementMap
 
-internal class ValidateFieldTest {
+internal class ValidationTest {
 
-    private val validateField = ValidateField()
+    private val validateField = Validation()
 
     @Test
     fun `test mapToObject with valid data`() {

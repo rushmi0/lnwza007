@@ -6,7 +6,7 @@ import org.lnwza007.relay.modules.*
 import org.slf4j.LoggerFactory
 
 @Singleton
-open class ValidateField {
+open class Validation {
 
     /**
      * ฟังก์ชัน checkFieldNames ใช้ในการตรวจสอบชื่อฟิลด์ข้อมูลว่าตรงกับนโยบายหรือไม่
@@ -78,13 +78,13 @@ open class ValidateField {
             LOG.warn("Invalid fields: $fieldNamesError")
         }
 
-        val invalidTypes = policy.mapNotNull { enumField ->
-            val field = map[enumField.fieldName]
-            val fieldType = enumField.fieldType
-            val fieldCollectionType = enumField.fieldCollectionType
-            val nestedFieldType = (enumField as? NostrField)?.nestedFieldType
+        val invalidTypes = policy.mapNotNull { nostrField ->
+            val field = map[nostrField.fieldName]
+            val fieldType = nostrField.fieldType
+            val fieldCollectionType = nostrField.fieldCollectionType
+            val nestedFieldType = (nostrField as? NostrField)?.nestedFieldType
             if (field != null && !checkFieldTypes(field, fieldType, fieldCollectionType, nestedFieldType)) {
-                enumField.fieldName to fieldType.simpleName
+                nostrField.fieldName to fieldType.simpleName
             } else {
                 null
             }
@@ -97,7 +97,8 @@ open class ValidateField {
         return if (isFieldNamesValid && invalidTypes.isEmpty()) converter(map) else null
     }
 
-    private val LOG = LoggerFactory.getLogger(ValidateField::class.java)
+
+    private val LOG = LoggerFactory.getLogger(Validation::class.java)
 
 }
 
