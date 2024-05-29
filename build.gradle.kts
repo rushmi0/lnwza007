@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
 
-    implementation("de.vandermeer:asciitable:0.3.2")
+    //implementation("de.vandermeer:asciitable:0.3.2")
 
     // https://mvnrepository.com/artifact/fr.acinq.secp256k1/secp256k1-kmp-jni-jvm
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.15.0")

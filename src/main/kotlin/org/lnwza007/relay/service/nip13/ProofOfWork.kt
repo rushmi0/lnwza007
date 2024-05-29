@@ -23,14 +23,15 @@ object ProofOfWork {
      * @param difficultyTarget ระดับความยากของ Proof of Work ที่ต้องการตรวจสอบ
      * @return true หาก Proof of Work มีความยากตามที่กำหนด, false หากไม่มีความยาก
      */
-    fun checkProofOfWork(hex: String, difficultyTarget: Int): Boolean = difficulty(hex) >= difficultyTarget
+    fun checkProofOfWork(hex: String, difficultyTarget: Long): Boolean = difficulty(hex) >= difficultyTarget
 
 
 }
 
 
 fun main() {
-    val difficulty = 23
+
+    val difficulty: Long = 23
 
     val workList = listOf(
         "000000bc2766a12eb379a84e5c25ee4bbdc0ebd87f462f956524bb6028556c5d",

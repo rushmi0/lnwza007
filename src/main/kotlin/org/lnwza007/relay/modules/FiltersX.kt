@@ -12,4 +12,3 @@ data class FiltersX(
     val limit: Long? = null,
     val search: String? = null
 )
-

@@ -20,7 +20,7 @@
 
     <logger name="io.micronaut.http.client" level="TRACE"/>
     <logger name="org.lnwza007.database.RedisCacheFactory" level="DEBUG"/>
-    <logger name="org.lnwza007.relay.ws.Gateway" level="DEBUG"/>
+    <logger name="org.lnwza007.relay.Gateway" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

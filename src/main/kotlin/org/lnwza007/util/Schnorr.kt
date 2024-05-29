@@ -1,14 +1,8 @@
 package org.lnwza007.util
 
 import fr.acinq.secp256k1.Secp256k1
-import kotlinx.serialization.json.Json
-import org.lnwza007.relay.modules.Event
-import org.lnwza007.relay.service.nip01.Transform.toEvent
 import org.lnwza007.util.ShiftTo.fromHex
 import org.lnwza007.util.ShiftTo.toHex
-import org.lnwza007.util.ShiftTo.toJsonElementMap
-import org.lnwza007.util.ShiftTo.toJsonString
-import org.lnwza007.util.ShiftTo.toSha256
 
 object Schnorr {
 
@@ -47,50 +41,16 @@ object Schnorr {
 
 
 fun main() {
-    val jsonString = """
-        {
-            "id": "0000005b0fc51e70b66db99ba1708b1a1b008c30db35d19d35146b3e09756029",
-            "pubkey": "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa",
-            "created_at": 1716617176,
-            "kind": 1,
-            "tags": [
-              ["nonce","19735841","23"]
-            ],
-            "content": "My custom content",
-            "sig": "954c662c9ee29ccad8a1f30d22b9a5cefcea774f72428ec7344b65e4f31fff24fc4dd0b7874a4d10a1a4c012de013df19a7c33018dda5f1207280f9a28193498"
-          }
-    """.trimIndent()
 
-    val event = Json.decodeFromString<Event>(jsonString)
-    println(event)
+    val id = "000006d8c378af1779d2feebc7603a125d99eca0ccf1085959b307f64e5dd358"
+    val sig = "284622fc0a3f4f1303455d5175f7ba962a3300d136085b9566801bc2e0699de0c7e31e44c81fb40ad9049173742e904713c3594a1da0fc5d2382a25c11aba977"
+    val pubkey = "a48380f4cfcc1ad5378294fcac36439770f9c878dd880ffa94bb74ea54a6f243"
 
-    val values = arrayListOf(
-        0,
-        event.pubkey,
-        event.createAt,
-        event.kind,
-        event.tags,
-        event.content
-    )
-    println(values)
 
-    val valueString = values.toJsonString()
-    println(valueString)
+    val verify = Schnorr.verify(id, pubkey, sig)
+    println(verify)
 
-    val sha256 = valueString.toSha256()
-    val newData = jsonString.toJsonElementMap().toEvent()
-    println(newData)
 
-    val id = newData?.id
-    val publicKey = newData?.pubkey
-    val signature = newData?.signature
-    val tag = newData?.tags
 
-    println("$id\n$publicKey\n$signature")
-    println("tag : $tag")
-    println(tag?.map { it[1] })
-
-    val isValid = Schnorr.verify(sha256, publicKey!!, signature!!)
-    println("Is Valid: $isValid\n")
 
 }
