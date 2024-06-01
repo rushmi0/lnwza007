@@ -11,7 +11,7 @@ import org.lnwza007.relay.modules.FiltersXValidateField
  * Transform ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ที่สามารถนำไปใช้ต่อได้ง่าย
  */
 @Singleton
-object Transform : Validation() {
+object Transform : VerificationFactory() {
 
     /**
      * ฟังก์ชัน convertToFiltersXObject ใช้ในการแปลงข้อมูล JSON เป็นออบเจ็กต์ FiltersX
@@ -22,7 +22,7 @@ object Transform : Validation() {
         return FiltersX(
             ids = field["ids"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet(),
             authors = field["authors"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet(),
-            kinds = field["kinds"]?.jsonArray?.map { it.jsonPrimitive.int }?.toSet(),
+            kinds = field["kinds"]?.jsonArray?.map { it.jsonPrimitive.long }?.toSet(),
             since = field["since"]?.jsonPrimitive?.longOrNull,
             until = field["until"]?.jsonPrimitive?.longOrNull,
             limit = field["limit"]?.jsonPrimitive?.longOrNull,
@@ -41,8 +41,10 @@ object Transform : Validation() {
             pubkey = field["pubkey"]?.jsonPrimitive?.contentOrNull,
             createAt = field["created_at"]?.jsonPrimitive?.longOrNull,
             content = field["content"]?.jsonPrimitive?.contentOrNull,
-            kind = field["kind"]?.jsonPrimitive?.intOrNull,
-            tags = field["tags"]?.jsonArray?.map { it.jsonArray.map { tag -> tag.jsonPrimitive.content } },
+            kind = field["kind"]?.jsonPrimitive?.longOrNull,
+            tags = field["tags"]?.jsonArray?.map {
+                it.jsonArray.map { tag -> tag.jsonPrimitive.content }
+            },
             signature = field["sig"]?.jsonPrimitive?.contentOrNull
         )
     }
@@ -52,11 +54,15 @@ object Transform : Validation() {
      * @receiver Map<String, JsonElement> ข้อมูล JSON ที่ต้องการแปลง
      * @return คู่ของข้อความแจ้งเตือนและออบเจ็กต์ FiltersX หากข้อมูลไม่ตรงกับนโยบาย และ null ถ้าไม่มีข้อความแจ้งเตือน
      */
-    fun Map<String, JsonElement>.toFiltersX(): Array<Any?> {
+    fun Map<String, JsonElement>.toFiltersX(): Pair<String?, FiltersX?> {
         // เรียกใช้ฟังก์ชัน mapToObject เพื่อแปลงข้อมูล JSON เป็น FiltersX ตามนโยบายที่กำหนด
-        val (errorMsg, objectFiltersX) = mapToObject(this, FiltersXValidateField.entries.toTypedArray(), ::convertToFiltersXObject)
+        val (status, message, objectFiltersX) = mapToObject(
+            this,
+            FiltersXValidateField.entries.toTypedArray(),
+            ::convertToFiltersXObject
+        )
         // คืนค่าคู่ของข้อความแจ้งเตือนและออบเจ็กต์ FiltersX
-        return arrayOf(errorMsg, objectFiltersX)
+        return Pair(message, objectFiltersX)
     }
 
     /**
@@ -64,13 +70,16 @@ object Transform : Validation() {
      * @receiver Map<String, JsonElement> ข้อมูล JSON ที่ต้องการแปลง
      * @return คู่ของข้อความแจ้งเตือนและออบเจ็กต์ Event หากข้อมูลไม่ตรงกับนโยบาย และ null ถ้าไม่มีข้อความแจ้งเตือน
      */
-    fun Map<String, JsonElement>.toEvent(): Array<Any?> {
+    fun Map<String, JsonElement>.toEvent(): Pair<String?, Event?> {
         // เรียกใช้ฟังก์ชัน mapToObject เพื่อแปลงข้อมูล JSON เป็น Event ตามนโยบายที่กำหนด
-        val (errorMsg, objectEvent) = mapToObject(this, EventValidateField.entries.toTypedArray(), ::convertToEventObject)
+        val (status, message, objectEvent) = mapToObject(
+            this,
+            EventValidateField.entries.toTypedArray(),
+            ::convertToEventObject
+        )
         // คืนค่าคู่ของข้อความแจ้งเตือนและออบเจ็กต์ Event
-        return arrayOf(errorMsg, objectEvent)
+        return Pair(message, objectEvent)
     }
-
 
 
 }

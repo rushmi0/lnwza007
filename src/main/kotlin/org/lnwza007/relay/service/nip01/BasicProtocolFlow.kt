@@ -19,15 +19,17 @@ class BasicProtocolFlow @Inject constructor(
 
     fun onEvent(mag: String, session: WebSocketSession) {
 
-        val (warn, event) = mag.toJsonElementMap().toEvent()
+        val event = mag.toJsonElementMap().toEvent()
 
-        LOG.info("Event: $event")
+
+        LOG.info("mag: ${event.first}")
+        LOG.info("Event: ${event.second?.createAt?.javaClass}")
         LOG.info("session: $session")
     }
 
     fun onRequest(mag: String, subscriptionId: String, session: WebSocketSession) {
         val filter = mag.toJsonElementMap().toFiltersX()
-        LOG.info("Filter: ${filter[1]}")
+        LOG.info("Filter: ${filter.second}")
         LOG.info("Subscription ID: $subscriptionId session: $session")
     }
 

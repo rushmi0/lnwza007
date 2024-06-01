@@ -52,7 +52,6 @@ class Gateway @Inject constructor(
         if (msg.jsonArray.size < 2) {
             session.sendSync("Error: Invalid message format")
             session.close()
-            return
         }
 
         when (msg.jsonArray[0].jsonPrimitive.content) {

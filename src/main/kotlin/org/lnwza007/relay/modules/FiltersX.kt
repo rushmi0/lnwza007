@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class FiltersX(
     val ids: Set<String>? = null,
     val authors: Set<String>? = null,
-    val kinds: Set<Int>? = null,
+    val kinds: Set<Long>? = null,
     val since: Long? = null,
     val until: Long? = null,
     val limit: Long? = null,

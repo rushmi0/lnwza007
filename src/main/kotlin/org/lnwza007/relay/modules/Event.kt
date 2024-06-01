@@ -10,7 +10,7 @@ data class Event(
     @SerialName("created_at")
     val createAt: Long? = null,
     val content: String? = null,
-    val kind: Int? = null,
+    val kind: Long? = null,
     val tags: List<List<String>>? = null,
     @SerialName("sig")
     val signature: String? = null
