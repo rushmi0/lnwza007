@@ -3,6 +3,7 @@ package org.lnwza007.util
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import fr.acinq.secp256k1.Hex
 import kotlinx.serialization.json.*
+import org.lnwza007.relay.modules.Event
 import java.security.MessageDigest
 import kotlin.random.Random
 
@@ -62,5 +63,16 @@ object ShiftTo {
     }
 
 
+    fun generateId(event: Event): String {
+        val draftEvent = arrayListOf(
+            0,
+            event.pubkey,
+            event.createAt,
+            event.kind,
+            event.tags,
+            event.content
+        ).toJsonString()
+        return draftEvent.toSha256()
+    }
 
 }

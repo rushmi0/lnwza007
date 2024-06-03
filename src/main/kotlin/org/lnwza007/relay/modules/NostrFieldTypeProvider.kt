@@ -7,5 +7,4 @@ interface NostrFieldTypeProvider {
 interface NostrField : NostrFieldTypeProvider {
     val fieldName: String
     val fieldCollectionType: Class<*>? get() = null
-    val nestedFieldType: Class<*>? get() = null
 }

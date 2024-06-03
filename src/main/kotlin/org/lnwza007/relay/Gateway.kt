@@ -46,7 +46,7 @@ class Gateway @Inject constructor(
 
 
     @OnMessage
-    fun onMessage(message: String, session: WebSocketSession) {
+    suspend fun onMessage(message: String, session: WebSocketSession) {
         val msg: JsonElement = Json.parseToJsonElement(message)
 
         if (msg.jsonArray.size < 2) {
