@@ -1,4 +1,4 @@
-package org.lnwza007.relay.nostr
+package org.lnwza007.relay.policy
 
 
 object EventKinds {

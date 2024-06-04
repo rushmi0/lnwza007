@@ -4,12 +4,13 @@ import org.jooq.meta.jaxb.Property
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.23"
-    id("com.google.devtools.ksp") version "1.9.23-1.0.19"
+    //id("com.google.devtools.ksp") version "1.9.23-1.0.19"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.micronaut.application") version "4.3.8"
     id("io.micronaut.test-resources") version "4.3.8"
     id("io.micronaut.aot") version "4.3.8"
     id("nu.studer.jooq") version "9.0"
+    //id("org.sonarqube") version "4.4.1.3373"
     kotlin("plugin.serialization") version "1.9.23"
 }
 
@@ -48,8 +49,8 @@ dependencies {
 
     runtimeOnly("ch.qos.logback:logback-classic")
 
-    ksp("io.micronaut:micronaut-http-validation")
-    ksp("io.micronaut.serde:micronaut-serde-processor")
+    //ksp("io.micronaut:micronaut-http-validation")
+    //ksp("io.micronaut.serde:micronaut-serde-processor")
     implementation("io.micronaut:micronaut-websocket")
     implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
     implementation("io.micronaut.redis:micronaut-redis-lettuce")
@@ -82,7 +83,7 @@ graalvmNative {
             buildArgs.add("-H:+AddAllCharsets")
             buildArgs.add("-R:MaxHeapSize=4G")
             buildArgs.add("-J-XX:MaxRAMPercentage=60.0")
-            buildArgs.add("--target=$platform")
+            //buildArgs.add("--target=$platform")
             imageName.set("${project.name}-$version-alpha")
             javaLauncher.set(javaToolchains.launcherFor {
                 languageVersion.set(JavaLanguageVersion.of(21))

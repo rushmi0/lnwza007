@@ -8,15 +8,15 @@ services:
   relay-db:
     container_name: relay-postgres
     image: postgres:15-alpine
-    restart: unless-stopped
-    ports:
-      - "54330:5432"
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: sql@min
       POSTGRES_DB: nostr
     volumes:
       - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d/
+    restart: unless-stopped
+    ports:
+      - "54330:5432"
     networks:
       - dev_network
 

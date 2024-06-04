@@ -3,7 +3,9 @@ package org.lnwza007.relay.service.nip01
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
-import org.lnwza007.relay.modules.*
+import org.lnwza007.relay.policy.EventValidateField
+import org.lnwza007.relay.policy.FiltersXValidateField
+import org.lnwza007.relay.policy.NostrField
 import org.lnwza007.util.ShiftTo.toJsonElementMap
 import org.slf4j.LoggerFactory
 
@@ -72,21 +74,6 @@ open class VerificationFactory {
 
     private inline fun <reified T> Array<*>.isArrayOf(): Boolean = all { it is T }
 
-    /*
-    fun validateDataType(
-        receive: Map<String, JsonElement>,
-        relayPolicy: Array<out NostrField>
-    ): Pair<Boolean, String?> {
-        receive.forEach { (fieldName, fieldValue) ->
-            val expectedType = relayPolicy.find { policy -> policy.fieldName == fieldName }?.fieldType
-            val actualType = inspectDataType(fieldValue)
-            if (expectedType != actualType) {
-                return Pair(false, "Invalid data type at [$fieldName] field")
-            }
-        }
-        return inspectValue(receive, relayPolicy)
-    }
-     */
 
     fun validateDataType(
         receive: Map<String, JsonElement>,
@@ -100,16 +87,16 @@ open class VerificationFactory {
             }
         }
 
-        val missingFields = relayPolicy.filterNot { field -> receive.containsKey(field.fieldName) }
-        if (missingFields.isNotEmpty()) {
-            val missingFieldNames = missingFields.joinToString(", ") { field -> field.fieldName }
-            //LOG.warn("Missing field names: [$missingFieldNames]")
-            return Pair(false, "Missing fields: [$missingFieldNames]")
+        if (relayPolicy.isArrayOf<EventValidateField>()) {
+            val missingFields = relayPolicy.filterNot { field -> receive.containsKey(field.fieldName) }
+            if (missingFields.isNotEmpty()) {
+                val missingFieldNames = missingFields.joinToString(", ") { field -> field.fieldName }
+                return Pair(false, "Missing fields: [$missingFieldNames]")
+            }
         }
 
         return inspectValue(receive, relayPolicy)
     }
-
 
 
     private val LOG = LoggerFactory.getLogger(VerificationFactory::class.java)

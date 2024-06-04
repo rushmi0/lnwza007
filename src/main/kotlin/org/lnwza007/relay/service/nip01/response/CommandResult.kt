@@ -1,4 +1,4 @@
-package org.lnwza007.relay.service.nip20
+package org.lnwza007.relay.service.nip01.response
 
 import io.micronaut.websocket.WebSocketSession
 import org.lnwza007.relay.modules.Event

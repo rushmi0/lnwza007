@@ -5,9 +5,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.Event
-import org.lnwza007.relay.modules.EventValidateField
+import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.modules.FiltersX
-import org.lnwza007.relay.modules.FiltersXValidateField
+import org.lnwza007.relay.policy.FiltersXValidateField
 import org.slf4j.LoggerFactory
 
 @Singleton

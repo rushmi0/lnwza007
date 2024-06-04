@@ -1,4 +1,4 @@
-package org.lnwza007.relay.modules
+package org.lnwza007.relay.policy
 
 import java.util.*
 

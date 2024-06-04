@@ -3,7 +3,6 @@ package org.lnwza007.relay.service.nip01
 import io.micronaut.websocket.WebSocketSession
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX
 import org.lnwza007.relay.service.nip01.Transform.toEvent
@@ -23,12 +22,14 @@ class BasicProtocolFlow @Inject constructor(
 
         val event = mag.toJsonElementMap().toEvent()
         LOG.info("Event: ${event.first().second}")
+        LOG.info("Event Message: ${event.first().first}")
         LOG.info("session: $session")
     }
 
     suspend fun onRequest(mag: String, subscriptionId: String, session: WebSocketSession) {
         val filter = mag.toJsonElementMap().toFiltersX()
         LOG.info("Filter: ${filter.first().second}")
+        LOG.info("FilterX Message: ${filter.first().first}")
         LOG.info("Subscription ID: $subscriptionId session: $session")
     }
 

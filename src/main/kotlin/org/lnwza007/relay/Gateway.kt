@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.service.nip01.BasicProtocolFlow
 import org.lnwza007.relay.service.nip11.RelayInformation
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @ServerWebSocket("/")
@@ -49,6 +50,8 @@ class Gateway @Inject constructor(
     suspend fun onMessage(message: String, session: WebSocketSession) {
         val msg: JsonElement = Json.parseToJsonElement(message)
 
+        LOG.info("Json Element: $msg")
+
         if (msg.jsonArray.size < 2) {
             session.sendSync("Error: Invalid message format")
             session.close()
@@ -69,7 +72,7 @@ class Gateway @Inject constructor(
     }
 
 
-    private val LOG = LoggerFactory.getLogger(Gateway::class.java)
+    private val LOG: Logger = LoggerFactory.getLogger(Gateway::class.java)
 
     companion object {
         const val RESET = "\u001B[0m"

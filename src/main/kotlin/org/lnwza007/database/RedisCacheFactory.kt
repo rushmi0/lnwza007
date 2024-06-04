@@ -5,6 +5,7 @@ import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.sync.RedisCommands
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -80,6 +81,7 @@ class RedisCacheFactory @Inject constructor(
     }
 
 }
+
 
 fun main() = runBlocking {
     // สร้าง RedisCacheFactory

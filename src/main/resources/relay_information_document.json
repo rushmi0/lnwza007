@@ -1,9 +1,0 @@
-{
-  "name": "lnwza007",
-  "description": "นึกแล้ว มึงต้องอ่าน",
-  "pubkey": "e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3",
-  "contact": "ไม่บอก",
-  "supported_nips": [1,2,4,9,11,12,13,15,16,20,28,50],
-  "software": "https://github.com/rushmi0/lnwza007.git",
-  "version": "0.1"
-}
