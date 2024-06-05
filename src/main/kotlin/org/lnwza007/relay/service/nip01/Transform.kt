@@ -15,7 +15,7 @@ object Transform : VerificationFactory() {
 
     private val LOG = LoggerFactory.getLogger(Transform::class.java)
 
-    private fun convertToFiltersXObject(field: Map<String, JsonElement>): FiltersX {
+    fun convertToFiltersXObject(field: Map<String, JsonElement>): FiltersX {
         return FiltersX(
             ids = field["ids"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet(),
             authors = field["authors"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet(),
@@ -27,7 +27,7 @@ object Transform : VerificationFactory() {
         )
     }
 
-    private fun convertToEventObject(field: Map<String, JsonElement>): Event {
+    fun convertToEventObject(field: Map<String, JsonElement>): Event {
         return Event(
             id = field["id"]?.jsonPrimitive?.contentOrNull,
             pubkey = field["pubkey"]?.jsonPrimitive?.contentOrNull,

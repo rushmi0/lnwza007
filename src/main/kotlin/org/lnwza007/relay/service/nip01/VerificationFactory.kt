@@ -6,7 +6,11 @@ import kotlinx.serialization.json.*
 import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.policy.NostrField
-import org.lnwza007.util.ShiftTo.toJsonElementMap
+import org.lnwza007.relay.service.nip01.Transform.convertToEventObject
+import org.lnwza007.relay.service.nip01.Transform.convertToFiltersXObject
+import org.lnwza007.util.Schnorr
+import org.lnwza007.util.ShiftTo.toJsonString
+import org.lnwza007.util.ShiftTo.toSha256
 import org.slf4j.LoggerFactory
 
 @Singleton
@@ -18,7 +22,7 @@ open class VerificationFactory {
     ): Pair<Boolean, String?> {
         val allowedFields: Set<String> = relayPolicy.map { it.fieldName }.toSet()
         val invalidFields: List<String> = receive.keys.filter { it !in allowedFields }
-        val msgError = "Unsupported [${invalidFields.joinToString(", ")}] field"
+        val msgError = "unsupported: [${invalidFields.joinToString(", ")}] fields"
         return if (invalidFields.isEmpty()) Pair(true, null) else Pair(false, msgError)
     }
 
@@ -55,22 +59,55 @@ open class VerificationFactory {
                 else -> receive.content::class.java
             }
 
-            is JsonArray -> receive.map { inspectDataType(it) }::class.java
-            is JsonObject -> receive.toMap().mapValues { inspectDataType(it.value) }::class.java
+            is JsonArray -> ArrayList::class.java//receive.map { inspectDataType(it) }::class.java
+            is JsonObject -> Map::class.java//receive.toMap().mapValues { inspectDataType(it.value) }::class.java
             else -> receive.toString()::class.java
         }
     }
+
 
     private fun inspectValue(
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
     ): Pair<Boolean, String?> {
         return when {
-            relayPolicy.isArrayOf<FiltersXValidateField>() -> Pair(true, "Data: FiltersX")
-            relayPolicy.isArrayOf<EventValidateField>() -> Pair(true, "Data: Event")
-            else -> Pair(false, "Unsupported field type")
+
+            relayPolicy.isArrayOf<FiltersXValidateField>() -> {
+                // การดำเนินการสำหรับ FiltersXValidateField
+                Pair(false, "Not yet implemented")
+            }
+
+            relayPolicy.isArrayOf<EventValidateField>() -> {
+                val obj = convertToEventObject(receive)
+
+                val id: String by lazy {
+                    arrayListOf(
+                        0,
+                        obj.pubkey,
+                        obj.createAt,
+                        obj.kind,
+                        obj.tags,
+                        obj.content
+                    ).toJsonString().toSha256()
+                }
+
+                if (!Schnorr.verify(id, obj.pubkey!!, obj.signature!!)) {
+                    LOG.info("invalid: signature")
+                    return Pair(false, "invalid: signature")
+                }
+
+                if (obj.id != id) {
+                    LOG.info("invalid: event id")
+                    return Pair(false, "invalid: event id")
+                }
+
+                // ถ้าทุกอย่าง
+                Pair(true, null)
+            }
+            else -> Pair(false, "unsupported: relay policy")
         }
     }
+
 
     private inline fun <reified T> Array<*>.isArrayOf(): Boolean = all { it is T }
 
@@ -83,7 +120,8 @@ open class VerificationFactory {
             val expectedType = relayPolicy.find { policy -> policy.fieldName == fieldName }?.fieldType
             val actualType = inspectDataType(fieldValue)
             if (expectedType != actualType) {
-                return Pair(false, "Invalid data type at [$fieldName] field")
+                //LOG.info("Invalid data type at [$fieldName] field")
+                return Pair(false, "invalid: data type at [$fieldName] field")
             }
         }
 
@@ -91,7 +129,8 @@ open class VerificationFactory {
             val missingFields = relayPolicy.filterNot { field -> receive.containsKey(field.fieldName) }
             if (missingFields.isNotEmpty()) {
                 val missingFieldNames = missingFields.joinToString(", ") { field -> field.fieldName }
-                return Pair(false, "Missing fields: [$missingFieldNames]")
+                //LOG.info("Missing fields: [$missingFieldNames]")
+                return Pair(false, "invalid: missing fields: [$missingFieldNames]")
             }
         }
 
@@ -102,70 +141,4 @@ open class VerificationFactory {
     private val LOG = LoggerFactory.getLogger(VerificationFactory::class.java)
 
 
-}
-
-fun main() = kotlinx.coroutines.runBlocking {
-    val invalidData = """
-        {
-            "kind":0,
-            "created_at":"1716448321",
-            "tags":[["alt","User profile for lnwza007"]],
-            "content":"{\"name\":\"lnwza007\",\"gender\":\"\",\"area\":\"\",\"picture\":\"https://image.nostr.build/552b5424ebd3c66be6f588e08c2f427e04423f11e80514414215b5ae00877b28.gif\",\"lud16\":\"rushmi0@getalby.com\",\"website\":\"https://github.com/rushmi0\",\"display_name\":\"lnwza007\",\"banner\":\"\",\"about\":\"แดดกรุงเทพที่ร้อนจ้า ยังแพ้ตัวข้าที่ร้อน sat\"}",
-            "pubkey":"e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3",
-            "id":"ecfdf5d329ae69bdca40f04a33a8f8447b83824f958a8db926430cd8b2aeb350",
-            "sig":"6a7898997ceb936fb6f660848baf8185f84ab22ff45aa3fc36eabad577bb4fae739bfdcd3d428d52146c6feaf9264bbc8f82121ddb8eeb85ce242ff79a1b0948"
-        }
-    """.trimIndent()
-
-    val jsonEvent1 = invalidData.toJsonElementMap()
-    val commandEvent1 = VerificationFactory().validateDataType(jsonEvent1, EventValidateField.entries.toTypedArray())
-    println(commandEvent1)
-
-    val validData = """
-        {
-            "id": "0000005b0fc51e70b66db99ba1708b1a1b008c30db35d19d35146b3e09756029",
-            "pubkey": "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa",
-            "created_at": 1716617176,
-            "kind": 1,
-            "tags": [
-              ["nonce","19735841","23"]
-            ],
-            "content": "My custom content",
-            "sig": "954c662c9ee29ccad8a1f30d22b9a5cefcea774f72428ec7344b65e4f31fff24fc4dd0b7874a4d10a1a4c012de013df19a7c33018dda5f1207280f9a28193498"
-        }
-    """.trimIndent()
-
-    val jsonEvent2 = validData.toJsonElementMap()
-    val commandEvent2 = VerificationFactory().validateDataType(jsonEvent2, EventValidateField.entries.toTypedArray())
-    println(commandEvent2)
-
-    val jsonREQ1 = """
-        {
-            "authors": [
-              "8c3a51f90fe05d694a1efe95e0d31b1b00f3314029d708b120e7f8d4a983a89c",
-              "e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"
-            ],
-            "kinds": [1]
-        }
-    """.trimIndent()
-
-    val jsonElemenREQ1 = jsonREQ1.toJsonElementMap()
-    val commandREQ1 =
-        VerificationFactory().validateDataType(jsonElemenREQ1, FiltersXValidateField.entries.toTypedArray())
-    println(commandREQ1)
-
-    val jsonREQ2 = """
-        {
-            "authors": [
-              "e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"
-            ],
-            "kinds": [4],
-            "since": 1715181359
-        }
-    """.trimIndent()
-
-    val jsonElemenREQ2 = jsonREQ2.toJsonElementMap()
-    val commandREQ2 =
-        VerificationFactory().validateDataType(jsonElemenREQ2, FiltersXValidateField.entries.toTypedArray())
-    println(commandREQ2)
 }

@@ -1,16 +1,17 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Logging
 import org.jooq.meta.jaxb.Property
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.23"
-    //id("com.google.devtools.ksp") version "1.9.23-1.0.19"
+    id("com.google.devtools.ksp") version "1.9.23-1.0.19"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.micronaut.application") version "4.3.8"
     id("io.micronaut.test-resources") version "4.3.8"
     id("io.micronaut.aot") version "4.3.8"
     id("nu.studer.jooq") version "9.0"
-    //id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version "4.4.1.3373"
     kotlin("plugin.serialization") version "1.9.23"
 }
 
@@ -49,8 +50,8 @@ dependencies {
 
     runtimeOnly("ch.qos.logback:logback-classic")
 
-    //ksp("io.micronaut:micronaut-http-validation")
-    //ksp("io.micronaut.serde:micronaut-serde-processor")
+    ksp("io.micronaut:micronaut-http-validation")
+    ksp("io.micronaut.serde:micronaut-serde-processor")
     implementation("io.micronaut:micronaut-websocket")
     implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
     implementation("io.micronaut.redis:micronaut-redis-lettuce")
@@ -71,8 +72,17 @@ application {
     mainClass = "org.lnwza007.ApplicationKt"
 }
 java {
-    sourceCompatibility = JavaVersion.toVersion("21")
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_21.toString()
+        javaParameters = true
+    }
+}
+
 
 val platform = "linux-x86-64-v3"
 
@@ -139,8 +149,8 @@ jooq {
                     driver = "org.postgresql.Driver"
                     url = "jdbc:postgresql://localhost:54330/nostr"
                     //url = "jdbc:postgresql://relay-postgres:54330/nostr"
-                    user = "root"
-                    password = "sql@min"
+                    user = "rushmi0"
+                    password = "0sql@min1"
                     properties.add(Property().apply {
                         key = "ssl"
                         value = "false"
@@ -159,7 +169,7 @@ jooq {
                         isFluentSetters = true
                     }
                     target.apply {
-                        packageName = "org.lnwza007.infra.database"
+                        packageName = "nostr.relay.infra.database"
                         directory = "target/infra/jooq/main"
                     }
                     strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"

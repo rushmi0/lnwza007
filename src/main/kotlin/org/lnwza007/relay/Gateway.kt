@@ -26,7 +26,7 @@ class Gateway @Inject constructor(
     @OnOpen
     fun onOpen(session: WebSocketSession?, @Header(HttpHeaders.ACCEPT) accept: String?): HttpResponse<String>? {
         // ถ้าเป็นการเปิด WebSocket จะไม่มีการคืนค่า HttpResponse
-        if (session != null) {
+        session?.let {
             LOG.info("${GREEN}open$RESET $session")
             return null
         }

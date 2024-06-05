@@ -1,6 +1,6 @@
 package org.lnwza007.database.service
 
-import org.lnwza007.infra.database.tables.Event
+import nostr.relay.infra.database.tables.Event
 
 
 interface EventService {

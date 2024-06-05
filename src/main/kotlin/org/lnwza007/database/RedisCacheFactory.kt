@@ -62,7 +62,7 @@ class RedisCacheFactory @Inject constructor(
         deserializer: (String) -> T
     ): T? = withContext(Dispatchers.IO) {
         // ดึงข้อมูลจาก Redis โดยใช้คีย์
-        val serializedValue = redisCommands.get(key)
+        val serializedValue = redisCommands[key]
 
         // บันทึกลง log ว่าข้อมูลถูกดึงออกมาหรือไม่
         if (serializedValue != null) {

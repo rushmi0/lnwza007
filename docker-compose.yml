@@ -9,8 +9,8 @@ services:
     container_name: relay-postgres
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: sql@min
+      POSTGRES_USER: rushmi0
+      POSTGRES_PASSWORD: 0sql@min1
       POSTGRES_DB: nostr
     volumes:
       - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d/

@@ -19,17 +19,16 @@ class BasicProtocolFlow @Inject constructor(
 
 
     suspend fun onEvent(mag: String, session: WebSocketSession) {
-
-        val event = mag.toJsonElementMap().toEvent()
-        LOG.info("Event: ${event.first().second}")
-        LOG.info("Event Message: ${event.first().first}")
+        val (message, event) = mag.toJsonElementMap().toEvent().first()
+        LOG.info("Event: $event")
+        LOG.info("Event Message: $message")
         LOG.info("session: $session")
     }
 
     suspend fun onRequest(mag: String, subscriptionId: String, session: WebSocketSession) {
-        val filter = mag.toJsonElementMap().toFiltersX()
-        LOG.info("Filter: ${filter.first().second}")
-        LOG.info("FilterX Message: ${filter.first().first}")
+        val (message, filter) = mag.toJsonElementMap().toFiltersX().first()
+        LOG.info("Filter: $filter")
+        LOG.info("FilterX Message: $message")
         LOG.info("Subscription ID: $subscriptionId session: $session")
     }
 
