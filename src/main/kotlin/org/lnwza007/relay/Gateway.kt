@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.service.nip01.BasicProtocolFlow
 import org.lnwza007.relay.service.nip11.RelayInformation
+import org.lnwza007.util.ShiftTo.toJsonElementMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -47,7 +48,12 @@ class Gateway @Inject constructor(
 
 
     @OnMessage
-    suspend fun onMessage(message: String, session: WebSocketSession) {
+    fun onMessage(message: String, session: WebSocketSession) {
+        LOG.info("message: $message")
+
+
+
+        /*
         val msg: JsonElement = Json.parseToJsonElement(message)
 
         LOG.info("Json Element: $msg")
@@ -63,6 +69,7 @@ class Gateway @Inject constructor(
             "CLOSE" -> nip01.onClose(session)
             else ->session.sendSync("Unsupported message: $message")
         }
+         */
     }
 
 

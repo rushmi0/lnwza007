@@ -211,7 +211,7 @@ Content-Type: application/json
 
 
 ###
-WEBSOCKET wss://relay.notoshi.win
+WEBSOCKET wss://relay.damus.io
 Content-Type: application/json
 
 [
