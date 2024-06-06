@@ -168,6 +168,26 @@ Content-Type: application/json
 ]
 
 ###
+WEBSOCKET ws://localhost:6624
+Content-Type: application/json
+
+[
+  "REQ",
+  "FavDpMq9QkV28wJuQpHvv",
+  {
+    "#p":["ad4d6d3961af8c32ad8e9239a8c7f07450e9de0ffd239acd262d7b7713bf030b"],
+    "kinds":[1,6,16,7,9735,2004,30023],
+    "limit":50
+  }
+]
+
+###
+WEBSOCKET ws://localhost:6624
+Content-Type: application/json
+
+
+
+###
 # ทดสอบให้แจ้งปัญหา
 WEBSOCKET ws://localhost:6624
 Content-Type: application/json

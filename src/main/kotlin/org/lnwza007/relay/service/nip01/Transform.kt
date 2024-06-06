@@ -40,7 +40,7 @@ object Transform : VerificationFactory() {
     }
 
 
-    fun Map<String, JsonElement>.toFiltersX(): Flow<Pair<String?, FiltersX?>> = flow {
+    fun Map<String, JsonElement>.toFiltersX(): Flow<Triple<Boolean, String?, FiltersX?>> = flow {
         mapToObject(
             this@toFiltersX,
             FiltersXValidateField.entries.toTypedArray(),
@@ -48,15 +48,14 @@ object Transform : VerificationFactory() {
         ).collect { (status, message, obj) ->
             if (status) {
                 LOG.info("FiltersX conversion successful")
-                emit(Pair(message, obj))
+                emit(Triple(status, message, obj))
             } else {
                 LOG.warn("FiltersX conversion failed")
-                emit(Pair(message, null))
             }
         }
     }
 
-    fun Map<String, JsonElement>.toEvent(): Flow<Pair<String?, Event?>> = flow {
+    fun Map<String, JsonElement>.toEvent(): Flow<Triple<Boolean, String?, Event?>> = flow {
         mapToObject(
             this@toEvent,
             EventValidateField.entries.toTypedArray(),
@@ -64,11 +63,11 @@ object Transform : VerificationFactory() {
         ).collect { (status, message, obj) ->
             if (status) {
                 LOG.info("Event conversion successful")
-                emit(Pair(message, obj))
+                emit(Triple(status, message, obj))
             } else {
-                LOG.warn("Event conversion failed")
-                emit(Pair(message, null))
+                LOG.warn("Event conversion failed: $message")
             }
+
         }
     }
 

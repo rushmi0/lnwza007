@@ -7,7 +7,6 @@ import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.policy.NostrField
 import org.lnwza007.relay.service.nip01.Transform.convertToEventObject
-import org.lnwza007.relay.service.nip01.Transform.convertToFiltersXObject
 import org.lnwza007.util.Schnorr
 import org.lnwza007.util.ShiftTo.toJsonString
 import org.lnwza007.util.ShiftTo.toSha256
@@ -46,7 +45,7 @@ open class VerificationFactory {
             return@flow
         }
 
-        emit(Triple(status, null, converter(receive)))
+        emit(Triple(status, "", converter(receive)))
     }
 
     private fun inspectDataType(receive: JsonElement): Any {
@@ -102,7 +101,7 @@ open class VerificationFactory {
                 }
 
                 // ถ้าทุกอย่าง
-                Pair(true, null)
+                Pair(true, "")
             }
             else -> Pair(false, "unsupported: relay policy")
         }

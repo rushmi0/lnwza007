@@ -14,4 +14,5 @@ enum class FiltersXValidateField(
     UNTIL("until", Long::class.java),
     LIMIT("limit", Long::class.java),
     SEARCH("search", String::class.java)
+
 }
