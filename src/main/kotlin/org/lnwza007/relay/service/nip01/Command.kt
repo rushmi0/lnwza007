@@ -4,6 +4,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX
+import org.lnwza007.relay.policy.EventValidateField
+import org.lnwza007.relay.policy.FiltersXValidateField
+import org.lnwza007.relay.service.nip01.Transform.toEvent
+import org.lnwza007.relay.service.nip01.Transform.toFiltersX
+import org.lnwza007.relay.service.nip01.Transform.validateJsonElement
+import org.lnwza007.util.ShiftTo.toJsonElementMap
 
 @Serializable
 sealed class Command
@@ -12,14 +18,14 @@ sealed class Command
 data class EVENT(val event: Event) : Command()
 
 @Serializable
-data class REQ(val subscriptionId: String, val filtersX: List<FiltersX>) : Command()
+data class REQ(val subscriptionId: String, val filtersX: List<FiltersX>?) : Command()
 
 @Serializable
 data class CLOSE(val subscriptionId: String) : Command()
 
-fun parseCommand(inputString: String): Command {
+fun parseCommand(payload: String): Pair<Command?, Pair<Boolean, String>> {
     val jsonElement = try {
-        Json.parseToJsonElement(inputString)
+        Json.parseToJsonElement(payload)
     } catch (e: Exception) {
         throw IllegalArgumentException("Invalid JSON format")
     }
@@ -33,9 +39,22 @@ fun parseCommand(inputString: String): Command {
             if (jsonElement.size != 2 || jsonElement[1] !is JsonObject) {
                 throw IllegalArgumentException("Invalid EVENT command format")
             }
-            val eventJson = jsonElement[1].jsonObject
-            val event = Json.decodeFromJsonElement<Event>(eventJson)
-            EVENT(event)
+            val eventJson: JsonObject = jsonElement[1].jsonObject
+            val event: Event = eventJson.toEvent()
+
+            val data: Map<String, JsonElement> = try {
+                val obj = jsonElement[1].jsonObject
+                obj.toMap()
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Invalid object at index 1")
+            }
+
+            val (status, warning) = validateJsonElement(data, EventValidateField.entries.toTypedArray())
+
+            Pair(
+                EVENT(event),
+                Pair(status, warning)
+            )
         }
 
         "REQ" -> {
@@ -43,9 +62,31 @@ fun parseCommand(inputString: String): Command {
                 throw IllegalArgumentException("Invalid REQ command format")
             }
             val subscriptionId = jsonElement[1].jsonPrimitive.content
-            val filtersJson = jsonElement.drop(2).map { it.jsonObject }
-            val filtersX = filtersJson.map { Json.decodeFromJsonElement<FiltersX>(it) }
-            REQ(subscriptionId, filtersX)
+            val filtersJson: List<JsonObject> = jsonElement.drop(2).map { it.jsonObject }
+
+            // ใช้ queue algorithm เพื่อรวบรวมข้อมูลจาก filtersJson ลงใน Map
+            val data: MutableMap<String, JsonElement> = mutableMapOf()
+            val queue: ArrayDeque<JsonObject> = ArrayDeque(filtersJson)
+
+            while (queue.isNotEmpty()) {
+                val current = queue.removeFirst()
+                current.forEach { (key, value) ->
+                    data[key] = value
+                }
+            }
+
+            val filtersX: List<FiltersX>? = try {
+                filtersJson.map { it.toFiltersX() }
+            } catch (e: Exception) {
+                null
+            }
+
+            val (status, warning) = validateJsonElement(data, FiltersXValidateField.entries.toTypedArray())
+
+            Pair(
+                REQ(subscriptionId, filtersX),
+                Pair(status, warning)
+            )
         }
 
         "CLOSE" -> {
@@ -54,9 +95,18 @@ fun parseCommand(inputString: String): Command {
             }
             val subscriptionId = jsonElement[1].jsonPrimitive.content
             CLOSE(subscriptionId)
+
+            Pair(
+                CLOSE(subscriptionId),
+                Pair(false, "")
+            )
+
         }
 
         else -> throw IllegalArgumentException("Unknown command: $type")
     }
 }
 
+fun main() {
+
+}

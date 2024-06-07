@@ -94,7 +94,7 @@ Content-Type: application/json
   }
 ]
 
-###
+###event
 
 WEBSOCKET ws://localhost:6624
 Content-Type: application/json
@@ -185,7 +185,7 @@ Content-Type: application/json
 WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
-["zREQ", "ffffff", {"kinds": [1]}]
+["REQ", "ffffff", {"kinds": [1]}]
 
 ### ["CLOSED", "ffffff"]
 
@@ -198,6 +198,11 @@ Content-Type: application/json
 [
   "REQ",
   "fffffffff",
+  {
+    "kinds": [1],
+    "authors": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"],
+    "search": "purple"
+  },
   {"search": "purple", "kinds": [1], "status": true, "since": 1715181359}
 ]
 

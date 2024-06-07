@@ -5,9 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.Event
-import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.modules.FiltersX
-import org.lnwza007.relay.policy.FiltersXValidateField
 import org.slf4j.LoggerFactory
 
 @Singleton
@@ -39,36 +37,21 @@ object Transform : VerificationFactory() {
         )
     }
 
-
-    fun Map<String, JsonElement>.toFiltersX(): Flow<Triple<Boolean, String?, FiltersX?>> = flow {
-        mapToObject(
-            this@toFiltersX,
-            FiltersXValidateField.entries.toTypedArray(),
-            ::convertToFiltersXObject
-        ).collect { (status, message, obj) ->
-            if (status) {
-                LOG.info("FiltersX conversion successful")
-                emit(Triple(status, message, obj))
-            } else {
-                LOG.warn("FiltersX conversion failed")
-            }
-        }
+    fun Map<String, JsonElement>.toFiltersX(): FiltersX {
+        return convertToFiltersXObject(this)
     }
 
-    fun Map<String, JsonElement>.toEvent(): Flow<Triple<Boolean, String?, Event?>> = flow {
-        mapToObject(
-            this@toEvent,
-            EventValidateField.entries.toTypedArray(),
-            ::convertToEventObject
-        ).collect { (status, message, obj) ->
-            if (status) {
-                LOG.info("Event conversion successful")
-                emit(Triple(status, message, obj))
-            } else {
-                LOG.warn("Event conversion failed: $message")
-            }
+    fun Map<String, JsonElement>.toEvent(): Event {
+        return convertToEventObject(this)
+    }
 
-        }
+
+    fun JsonObject.toFiltersX(): FiltersX {
+        return Json.decodeFromJsonElement<FiltersX>(this)
+    }
+
+    fun JsonObject.toEvent(): Event {
+        return Json.decodeFromJsonElement<Event>(this)
     }
 
 }

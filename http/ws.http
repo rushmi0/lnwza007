@@ -1,4 +1,4 @@
-# wss://relay.notoshi.win
+# wss://relay.damus.io
 # wss://relay.damus.io
 # ws://localhost:8080
 
@@ -119,7 +119,7 @@ Content-Type: application/json
 ]
 
 ###
-WEBSOCKET wss://relay.notoshi.win
+WEBSOCKET wss://relay.damus.io
 Content-Type: application/json
 
 [
@@ -194,7 +194,7 @@ Content-Type: application/json
 
 
 ### 1715181359
-WEBSOCKET wss://relay.notoshi.win
+WEBSOCKET wss://relay.damus.io
 Content-Type: application/json
 
 [
@@ -230,7 +230,7 @@ Content-Type: application/json
 ]
 
 ###
-WEBSOCKET wss://relay.notoshi.win
+WEBSOCKET wss://relay.damus.io
 Content-Type: application/json
 
 [

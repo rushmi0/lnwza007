@@ -64,15 +64,17 @@ object ShiftTo {
 
 
     fun generateId(event: Event): String {
-        val draftEvent = arrayListOf(
-            0,
-            event.pubkey,
-            event.createAt,
-            event.kind,
-            event.tags,
-            event.content
-        ).toJsonString()
-        return draftEvent.toSha256()
+        return lazy {
+            arrayListOf(
+                0,
+                event.pubkey,
+                event.createAt,
+                event.kind,
+                event.tags,
+                event.content
+            ).toJsonString().toSha256()
+        }.value
     }
+
 
 }
