@@ -11,28 +11,21 @@ import io.micronaut.websocket.annotation.OnOpen
 import io.micronaut.websocket.annotation.ServerWebSocket
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.*
-import org.lnwza007.relay.modules.Event
-import org.lnwza007.relay.modules.FiltersX
-import org.lnwza007.relay.policy.EventValidateField
-import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.service.nip01.*
+import org.lnwza007.relay.service.nip01.DetectCommand.parseCommand
 import org.lnwza007.relay.service.nip01.response.RelayResponse
 import org.lnwza007.relay.service.nip11.RelayInformation
-import org.lnwza007.util.ShiftTo.toJsonElementMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @ServerWebSocket("/")
 class Gateway @Inject constructor(
     private val nip01: BasicProtocolFlow,
-    private val nip11: RelayInformation,
-    private val validate: VerificationFactory
+    private val nip11: RelayInformation
 ) {
 
     @OnOpen
     fun onOpen(session: WebSocketSession?, @Header(HttpHeaders.ACCEPT) accept: String?): HttpResponse<String>? {
-        // ถ้าเป็นการเปิด WebSocket จะไม่มีการคืนค่า HttpResponse
         session?.let {
             LOG.info("${GREEN}open$RESET $session")
             return null
@@ -54,45 +47,41 @@ class Gateway @Inject constructor(
     fun onMessage(message: String, session: WebSocketSession) {
         LOG.info("message: \n$message")
 
-        val (command, validationResult) = parseCommand(message)
-        val (status, warning) = validationResult
-        when (command) {
-            is EVENT -> {
-                LOG.info("event: ${command.event}")
-                RelayResponse.OK(eventId = command.event.id!!, isSuccess = status, message = warning).toClient(session)
-            }
-            is REQ -> {
-                LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
-                if (status) {
-                    RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
-                } else {
-                    RelayResponse.NOTICE(validationResult.second).toClient(session)
+        try {
+            val (command, validationResult) = parseCommand(message)
+            val (status, warning) = validationResult
+            when (command) {
+                is EVENT -> {
+                    LOG.info("event: ${command.event}")
+                    RelayResponse.OK(eventId = command.event.id!!, isSuccess = status, message = warning).toClient(session)
+                }
+                is REQ -> {
+                    LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
+                    if (status) {
+                        RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
+                    } else {
+                        RelayResponse.NOTICE(validationResult.second).toClient(session)
+                    }
+                }
+                is CLOSE -> {
+                    LOG.info("close request for subscription ID: ${command.subscriptionId}")
+                    RelayResponse.CLOSED(subscriptionId = command.subscriptionId).toClient(session)
+                }
+                else -> {
+                    LOG.warn("Unknown command")
+                    RelayResponse.NOTICE("Unknown command").toClient(session)
                 }
             }
-            is CLOSE -> {
-                LOG.info("close request for subscription ID: ${command.subscriptionId}")
-                RelayResponse.CLOSED(subscriptionId = command.subscriptionId).toClient(session)
-            }
-            else -> {
-                LOG.warn("Unknown command")
-            }
-        }
-
-        /*
-        try {
 
         } catch (e: Exception) {
-            LOG.error("Failed to handle command: ${e.message}")
-            RelayResponse.NOTICE("Invalid command: ${e.message}").toClient(session)
+            LOG.error("Failed to handle command: ${e.stackTrace}")
         }
-
-         */
 
     }
 
 
 
-                        @OnClose
+    @OnClose
     fun onClose(session: WebSocketSession) {
 
     }

@@ -9,7 +9,6 @@ import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.service.nip01.Transform.toEvent
 import org.lnwza007.relay.service.nip01.Transform.toFiltersX
 import org.lnwza007.relay.service.nip01.Transform.validateJsonElement
-import org.lnwza007.util.ShiftTo.toJsonElementMap
 
 @Serializable
 sealed class Command
@@ -23,90 +22,66 @@ data class REQ(val subscriptionId: String, val filtersX: List<FiltersX>?) : Comm
 @Serializable
 data class CLOSE(val subscriptionId: String) : Command()
 
-fun parseCommand(payload: String): Pair<Command?, Pair<Boolean, String>> {
-    val jsonElement = try {
-        Json.parseToJsonElement(payload)
-    } catch (e: Exception) {
-        throw IllegalArgumentException("Invalid JSON format")
-    }
 
-    if (jsonElement !is JsonArray || jsonElement.size == 0) {
-        throw IllegalArgumentException("Invalid command format")
-    }
+object DetectCommand {
 
-    return when (val type = jsonElement[0].jsonPrimitive.content) {
-        "EVENT" -> {
-            if (jsonElement.size != 2 || jsonElement[1] !is JsonObject) {
-                throw IllegalArgumentException("Invalid EVENT command format")
-            }
-            val eventJson: JsonObject = jsonElement[1].jsonObject
-            val event: Event = eventJson.toEvent()
-
-            val data: Map<String, JsonElement> = try {
-                val obj = jsonElement[1].jsonObject
-                obj.toMap()
-            } catch (e: Exception) {
-                throw IllegalArgumentException("Invalid object at index 1")
-            }
-
-            val (status, warning) = validateJsonElement(data, EventValidateField.entries.toTypedArray())
-
-            Pair(
-                EVENT(event),
-                Pair(status, warning)
-            )
+    fun parseCommand(payload: String): Pair<Command?, Pair<Boolean, String>> {
+        val json = Json { ignoreUnknownKeys = true }
+        val jsonElement = try {
+            json.parseToJsonElement(payload)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Invalid JSON format")
         }
 
-        "REQ" -> {
-            if (jsonElement.size < 3 || jsonElement[1] !is JsonPrimitive || jsonElement.drop(2).any { it !is JsonObject }) {
-                throw IllegalArgumentException("Invalid REQ command format")
-            }
-            val subscriptionId = jsonElement[1].jsonPrimitive.content
-            val filtersJson: List<JsonObject> = jsonElement.drop(2).map { it.jsonObject }
-
-            // ใช้ queue algorithm เพื่อรวบรวมข้อมูลจาก filtersJson ลงใน Map
-            val data: MutableMap<String, JsonElement> = mutableMapOf()
-            val queue: ArrayDeque<JsonObject> = ArrayDeque(filtersJson)
-
-            while (queue.isNotEmpty()) {
-                val current = queue.removeFirst()
-                current.forEach { (key, value) ->
-                    data[key] = value
-                }
-            }
-
-            val filtersX: List<FiltersX>? = try {
-                filtersJson.map { it.toFiltersX() }
-            } catch (e: Exception) {
-                null
-            }
-
-            val (status, warning) = validateJsonElement(data, FiltersXValidateField.entries.toTypedArray())
-
-            Pair(
-                REQ(subscriptionId, filtersX),
-                Pair(status, warning)
-            )
+        if (jsonElement !is JsonArray || jsonElement.isEmpty()) {
+            throw IllegalArgumentException("Invalid command format")
         }
 
-        "CLOSE" -> {
-            if (jsonElement.size != 2 || jsonElement[1] !is JsonPrimitive) {
-                throw IllegalArgumentException("Invalid CLOSE command format")
-            }
-            val subscriptionId = jsonElement[1].jsonPrimitive.content
-            CLOSE(subscriptionId)
-
-            Pair(
-                CLOSE(subscriptionId),
-                Pair(false, "")
-            )
-
+        return when (val type = jsonElement[0].jsonPrimitive.content) {
+            "EVENT" -> parseEventCommand(jsonElement)
+            "REQ" -> parseReqCommand(jsonElement)
+            "CLOSE" -> parseCloseCommand(jsonElement)
+            else -> throw IllegalArgumentException("Unknown command: $type")
         }
-
-        else -> throw IllegalArgumentException("Unknown command: $type")
     }
-}
 
-fun main() {
+    private fun parseEventCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
+        if (jsonArray.size != 2 || jsonArray[1] !is JsonObject) {
+            throw IllegalArgumentException("Invalid EVENT command format")
+        }
+        val eventJson = jsonArray[1].jsonObject
+        val event: Event = eventJson.toEvent()
+        val data: Map<String, JsonElement> = eventJson.toMap()
+
+        val (status, warning) = validateJsonElement(data, EventValidateField.entries.toTypedArray())
+        return EVENT(event) to (status to warning)
+    }
+
+    private fun parseReqCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
+        if (jsonArray.size < 3 || jsonArray[1] !is JsonPrimitive || jsonArray.drop(2).any { it !is JsonObject }) {
+            throw IllegalArgumentException("Invalid REQ command format")
+        }
+        val subscriptionId = jsonArray[1].jsonPrimitive.content
+        val filtersJson = jsonArray.drop(2).map { it.jsonObject }
+
+        val data: Map<String, JsonElement> = filtersJson.flatMap { it.entries }.associate { it.key to it.value }
+
+        val filtersX = try {
+            filtersJson.map { it.toFiltersX() }
+        } catch (e: Exception) {
+            null
+        }
+
+        val (status, warning) = validateJsonElement(data, FiltersXValidateField.entries.toTypedArray())
+        return REQ(subscriptionId, filtersX) to (status to warning)
+    }
+
+    private fun parseCloseCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
+        if (jsonArray.size != 2 || jsonArray[1] !is JsonPrimitive) {
+            throw IllegalArgumentException("Invalid CLOSE command format")
+        }
+        val subscriptionId = jsonArray[1].jsonPrimitive.content
+        return CLOSE(subscriptionId) to (true to "")
+    }
 
 }

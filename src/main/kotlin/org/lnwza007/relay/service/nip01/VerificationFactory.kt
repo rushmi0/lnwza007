@@ -2,7 +2,6 @@ package org.lnwza007.relay.service.nip01
 
 import jakarta.inject.Singleton
 import kotlinx.serialization.json.*
-import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.policy.NostrField
@@ -102,7 +101,7 @@ open class VerificationFactory {
             val expectedType = relayPolicy.find { policy -> policy.fieldName == fieldName }?.fieldType
             val actualType = inspectDataType(fieldValue)
             if (expectedType != actualType) {
-                //LOG.info("Invalid data type at [$fieldName] field")
+                LOG.info("Invalid data type at [$fieldName] field")
                 return Pair(false, "invalid: data type at [$fieldName] field")
             }
         }
@@ -111,7 +110,7 @@ open class VerificationFactory {
             val missingFields = relayPolicy.filterNot { field -> receive.containsKey(field.fieldName) }
             if (missingFields.isNotEmpty()) {
                 val missingFieldNames = missingFields.joinToString(", ") { field -> field.fieldName }
-                //LOG.info("Missing fields: [$missingFieldNames]")
+                LOG.info("Missing fields: [$missingFieldNames]")
                 return Pair(false, "invalid: missing fields: [$missingFieldNames]")
             }
         }
