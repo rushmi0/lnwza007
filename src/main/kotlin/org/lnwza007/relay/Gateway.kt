@@ -12,7 +12,10 @@ import io.micronaut.websocket.annotation.ServerWebSocket
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
-import org.lnwza007.relay.service.nip01.BasicProtocolFlow
+import org.lnwza007.relay.modules.Event
+import org.lnwza007.relay.modules.FiltersX
+import org.lnwza007.relay.service.nip01.*
+import org.lnwza007.relay.service.nip01.response.RelayResponse
 import org.lnwza007.relay.service.nip11.RelayInformation
 import org.lnwza007.util.ShiftTo.toJsonElementMap
 import org.slf4j.Logger
@@ -49,33 +52,34 @@ class Gateway @Inject constructor(
 
     @OnMessage
     fun onMessage(message: String, session: WebSocketSession) {
-        LOG.info("message: $message")
+        LOG.info("message: \n$message")
 
-
-
-        /*
-        val msg: JsonElement = Json.parseToJsonElement(message)
-
-        LOG.info("Json Element: $msg")
-
-        if (msg.jsonArray.size < 2) {
-            session.sendSync("Error: Invalid message format")
-            session.close()
+        try {
+            when (val command = parseCommand(message)) {
+                is EVENT -> {
+                    LOG.info("event: ${command.event}")
+                    command.event.id?.let { RelayResponse.OK(eventId = it, isSuccess = true).toClient(session) }
+                }
+                is REQ -> {
+                    LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
+                    // ส่งการตอบสนองที่เหมาะสมไปยัง Client ตามการใช้งานที่คุณต้องการ
+                    RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
+                }
+                is CLOSE -> {
+                    LOG.info("close request for subscription ID: ${command.subscriptionId}")
+                    RelayResponse.CLOSED(subscriptionId = command.subscriptionId).toClient(session)
+                }
+            }
+        } catch (e: Exception) {
+            LOG.error("Failed to handle command: ${e.message}")
+            RelayResponse.NOTICE(message = "Invalid command: ${e.message}").toClient(session)
         }
-
-        when (msg.jsonArray[0].jsonPrimitive.content) {
-            "REQ" -> nip01.onRequest(msg.jsonArray[2].toString(), msg.jsonArray[1].jsonPrimitive.content, session)
-            "EVENT" -> nip01.onEvent(msg.jsonArray[1].toString(), session)
-            "CLOSE" -> nip01.onClose(session)
-            else ->session.sendSync("Unsupported message: $message")
-        }
-         */
     }
 
 
     @OnClose
     fun onClose(session: WebSocketSession) {
-        LOG.info("${PURPLE}close$RESET : $session")
+
     }
 
 

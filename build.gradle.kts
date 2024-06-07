@@ -65,6 +65,10 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("io.micronaut:micronaut-http-client")
+
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation("org.mockito:mockito-core:5.11.0")
+
 }
 
 
