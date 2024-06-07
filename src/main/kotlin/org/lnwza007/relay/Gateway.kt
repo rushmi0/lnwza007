@@ -58,11 +58,10 @@ class Gateway @Inject constructor(
             when (val command = parseCommand(message)) {
                 is EVENT -> {
                     LOG.info("event: ${command.event}")
-                    command.event.id?.let { RelayResponse.OK(eventId = it, isSuccess = true).toClient(session) }
+                    RelayResponse.OK(eventId = command.event.id!!, isSuccess = true).toClient(session)
                 }
                 is REQ -> {
                     LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
-                    // ส่งการตอบสนองที่เหมาะสมไปยัง Client ตามการใช้งานที่คุณต้องการ
                     RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
                 }
                 is CLOSE -> {
@@ -72,7 +71,7 @@ class Gateway @Inject constructor(
             }
         } catch (e: Exception) {
             LOG.error("Failed to handle command: ${e.message}")
-            RelayResponse.NOTICE(message = "Invalid command: ${e.message}").toClient(session)
+            RelayResponse.NOTICE("Invalid command: ${e.message}").toClient(session)
         }
     }
 

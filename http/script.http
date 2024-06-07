@@ -185,7 +185,7 @@ Content-Type: application/json
 WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
-["REQ", "ffffff", {"kinds": [1]}]
+["zREQ", "ffffff", {"kinds": [1]}]
 
 ### ["CLOSED", "ffffff"]
 
