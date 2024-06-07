@@ -65,7 +65,7 @@ class Gateway @Inject constructor(
                 }
                 is CLOSE -> {
                     LOG.info("close request for subscription ID: ${command.subscriptionId}")
-                    RelayResponse.CLOSED(subscriptionId = command.subscriptionId).toClient(session)
+                    RelayResponse.CLOSED(subscriptionId = command.subscriptionId, message = "").toClient(session)
                 }
                 else -> {
                     LOG.warn("Unknown command")

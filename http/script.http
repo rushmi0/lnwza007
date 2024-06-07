@@ -203,7 +203,8 @@ Content-Type: application/json
     "authors": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"],
     "search": "purple"
   },
-  {"search": "purple", "kinds": [1], "status": true, "since": 1715181359}
+  {"search": "purple", "kinds": [1], "status": true, "since": 1715181359},
+  {"search": "purple", "kindsss": 1, "status": true, "since": 1715181359}
 ]
 
 
