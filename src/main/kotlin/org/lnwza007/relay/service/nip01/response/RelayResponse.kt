@@ -27,8 +27,8 @@ sealed class RelayResponse<out T> {
     }
 
     fun toClient(session: WebSocketSession) {
-        val jsonString = this.toJson()
-        session.sendSync(jsonString)
+        val payload = this.toJson()
+        session.sendSync(payload)
 
         if (this is CLOSED) {
             session.close()

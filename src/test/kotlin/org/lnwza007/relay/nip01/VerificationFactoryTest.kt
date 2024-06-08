@@ -31,7 +31,7 @@ class VerificationFactoryTest {
         val jsonEvent: Map<String, JsonElement> = invalidData.toJsonElementMap()
         val commandEvent: Pair<Boolean, String?> = verifyData.validateDataType(jsonEvent, EventValidateField.entries.toTypedArray())
         assertEquals(
-            Pair(false, "Invalid data type at [created_at] field"),
+            Pair(false, "invalid data type at [created_at] field. Expected: long"),
             commandEvent
         )
     }
@@ -55,7 +55,7 @@ class VerificationFactoryTest {
         val jsonEvent: Map<String, JsonElement> = validData.toJsonElementMap()
         val commandEvent = verifyData.validateDataType(jsonEvent, EventValidateField.entries.toTypedArray())
         assertEquals(
-            Pair(true, "Not yet implemented"),
+            Pair(false, "invalid: signature"),
             commandEvent
         )
     }

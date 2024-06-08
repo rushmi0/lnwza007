@@ -84,7 +84,8 @@ Content-Type: application/json
 [
   "EVENT",
   {
-    "created_at":"1716448321",
+    "created_at":1716448321,
+    "xxx": 1,
     "kind":0,
     "tags":[["alt","User profile for lnwza007"]],
     "content":"{\"name\":\"lnwza007\",\"gender\":\"\",\"area\":\"\",\"picture\":\"https://image.nostr.build/552b5424ebd3c66be6f588e08c2f427e04423f11e80514414215b5ae00877b28.gif\",\"lud16\":\"rushmi0@getalby.com\",\"website\":\"https://github.com/rushmi0\",\"display_name\":\"lnwza007\",\"banner\":\"\",\"about\":\"แดดกรุงเทพที่ร้อนจ้า ยังแพ้ตัวข้าที่ร้อน sat\"}",
@@ -114,6 +115,8 @@ Content-Type: application/json
 
   }
 ]
+=== wait-for-server
+["CLOSE", "ffff"]
 
 
 ###
@@ -126,7 +129,7 @@ Content-Type: application/json
   {
     "id": "000006d8c378af1779d2feebc7603a125d99eca0ccf1085959b307f64e5dd358",
     "pubkey": "a48380f4cfcc1ad5378294fcac36439770f9c878dd880ffa94bb74ea54a6f243",
-    "created_at": 1651794653,
+    "created_at": "1651794653",
     "kind": 1,
     "tags": [
     ["nonce", "776797", "20"]
@@ -136,6 +139,28 @@ Content-Type: application/json
   }
 ]
 
+###
+# ทดสอบให้แจ้งปัญหา
+WEBSOCKET ws://localhost:6624
+Content-Type: application/json
+
+[
+  "REQ",
+  "8wHEWFsnIvKCWTb-4PMak",
+  {
+    "#d":[
+      "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
+      "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
+      "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"
+    ],
+    "kinds":[1,6,16,7,9735,2004,30023],
+    "limit":50
+  },
+  {
+    "kinds": [4],
+    "#p": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"]
+  }
+]
 
 ###
 # ทดสอบให้แจ้งปัญหา
@@ -175,7 +200,7 @@ Content-Type: application/json
   "REQ",
   "FavDpMq9QkV28wJuQpHvv",
   {
-    "#p":["ad4d6d3961af8c32ad8e9239a8c7f07450e9de0ffd239acd262d7b7713bf030b"],
+    "#x":["ad4d6d3961af8c32ad8e9239a8c7f07450e9de0ffd239acd262d7b7713bf030b"],
     "kinds":[1,6,16,7,9735,2004,30023],
     "limit":50
   }
@@ -185,7 +210,11 @@ Content-Type: application/json
 WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
-["REQ", "ffffff", {"kinds": [1]}]
+[
+  "REQ",
+  "ffffff",
+  {"kinds": [1]}
+]
 
 ### ["CLOSED", "ffffff"]
 
@@ -201,7 +230,8 @@ Content-Type: application/json
   {
     "kinds": [1],
     "authors": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"],
-    "search": "purple"
+    "search": "purple",
+    "#x": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"]
   },
   {"search": "purple", "kinds": [1], "status": true, "since": 1715181359},
   {"search": "purple", "kindsss": 1, "status": true, "since": 1715181359}

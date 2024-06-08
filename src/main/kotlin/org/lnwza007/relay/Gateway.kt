@@ -12,7 +12,11 @@ import io.micronaut.websocket.annotation.ServerWebSocket
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.lnwza007.relay.service.nip01.*
-import org.lnwza007.relay.service.nip01.DetectCommand.parseCommand
+import org.lnwza007.relay.service.nip01.command.AUTH
+import org.lnwza007.relay.service.nip01.command.CLOSE
+import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
+import org.lnwza007.relay.service.nip01.command.EVENT
+import org.lnwza007.relay.service.nip01.command.REQ
 import org.lnwza007.relay.service.nip01.response.RelayResponse
 import org.lnwza007.relay.service.nip11.RelayInformation
 import org.slf4j.Logger
@@ -51,22 +55,28 @@ class Gateway @Inject constructor(
             val (command, validationResult) = parseCommand(message)
             val (status, warning) = validationResult
             when (command) {
+
                 is EVENT -> {
                     LOG.info("event: ${command.event}")
                     RelayResponse.OK(eventId = command.event.id!!, isSuccess = status, message = warning).toClient(session)
                 }
+
                 is REQ -> {
-                    LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
                     if (status) {
+                        LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
+                        LOG.info("tag: ${command.filtersX?.get(0)?.tags}")
+                        LOG.info("tag: ${command.filtersX?.get(1)?.tags}")
                         RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
                     } else {
-                        RelayResponse.NOTICE(validationResult.second).toClient(session)
+                        RelayResponse.NOTICE(warning).toClient(session)
                     }
                 }
+
                 is CLOSE -> {
                     LOG.info("close request for subscription ID: ${command.subscriptionId}")
                     RelayResponse.CLOSED(subscriptionId = command.subscriptionId, message = "").toClient(session)
                 }
+
                 else -> {
                     LOG.warn("Unknown command")
                     RelayResponse.NOTICE("Unknown command").toClient(session)
@@ -74,11 +84,11 @@ class Gateway @Inject constructor(
             }
 
         } catch (e: Exception) {
-            LOG.error("Failed to handle command: ${e.stackTrace}")
+            LOG.error("Failed to handle command: ${e.message}")
+            RelayResponse.NOTICE("ERROR: ${e.message}").toClient(session)
         }
 
     }
-
 
 
     @OnClose

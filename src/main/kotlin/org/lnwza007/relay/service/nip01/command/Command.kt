@@ -1,4 +1,4 @@
-package org.lnwza007.relay.service.nip01
+package org.lnwza007.relay.service.nip01.command
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
@@ -6,6 +6,7 @@ import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX
 import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
+import org.lnwza007.relay.service.nip01.Transform.convertToFiltersXObject
 import org.lnwza007.relay.service.nip01.Transform.toEvent
 import org.lnwza007.relay.service.nip01.Transform.toFiltersX
 import org.lnwza007.relay.service.nip01.Transform.validateJsonElement
@@ -22,6 +23,8 @@ data class REQ(val subscriptionId: String, val filtersX: List<FiltersX>?) : Comm
 @Serializable
 data class CLOSE(val subscriptionId: String) : Command()
 
+@Serializable
+data class AUTH(val challenge: String) : Command()
 
 object DetectCommand {
 
@@ -30,11 +33,11 @@ object DetectCommand {
         val jsonElement = try {
             json.parseToJsonElement(payload)
         } catch (e: Exception) {
-            throw IllegalArgumentException("Invalid JSON format")
+            throw IllegalArgumentException("Invalid: JSON format")
         }
 
         if (jsonElement !is JsonArray || jsonElement.isEmpty()) {
-            throw IllegalArgumentException("Invalid command format")
+            throw IllegalArgumentException("Invalid: command format")
         }
 
         return when (val type = jsonElement[0].jsonPrimitive.content) {
@@ -61,13 +64,13 @@ object DetectCommand {
         if (jsonArray.size < 3 || jsonArray[1] !is JsonPrimitive || jsonArray.drop(2).any { it !is JsonObject }) {
             throw IllegalArgumentException("Invalid REQ command format")
         }
-        val subscriptionId = jsonArray[1].jsonPrimitive.content
-        val filtersJson = jsonArray.drop(2).map { it.jsonObject }
+        val subscriptionId: String = jsonArray[1].jsonPrimitive.content
+        val filtersJson: List<JsonObject> = jsonArray.drop(2).map { it.jsonObject }
 
         val data: Map<String, JsonElement> = filtersJson.flatMap { it.entries }.associate { it.key to it.value }
 
-        val filtersX = try {
-            filtersJson.map { it.toFiltersX() }
+        val filtersX: List<FiltersX>? = try {
+            filtersJson.map { convertToFiltersXObject(it) }
         } catch (e: Exception) {
             null
         }
@@ -75,7 +78,6 @@ object DetectCommand {
         val (status, warning) = validateJsonElement(data, FiltersXValidateField.entries.toTypedArray())
         return REQ(subscriptionId, filtersX) to (status to warning)
     }
-
     private fun parseCloseCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size != 2 || jsonArray[1] !is JsonPrimitive) {
             throw IllegalArgumentException("Invalid CLOSE command format")
