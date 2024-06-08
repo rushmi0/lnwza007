@@ -18,7 +18,7 @@ sealed class Command
 data class EVENT(val event: Event) : Command()
 
 @Serializable
-data class REQ(val subscriptionId: String, val filtersX: List<FiltersX>?) : Command()
+data class REQ(val subscriptionId: String, val filtersX: List<FiltersX>) : Command()
 
 @Serializable
 data class CLOSE(val subscriptionId: String) : Command()
@@ -44,6 +44,7 @@ object DetectCommand {
             "EVENT" -> parseEventCommand(jsonElement)
             "REQ" -> parseReqCommand(jsonElement)
             "CLOSE" -> parseCloseCommand(jsonElement)
+            "AUTH" -> TODO("Not yet implemented")
             else -> throw IllegalArgumentException("Unknown command: $type")
         }
     }
@@ -69,15 +70,12 @@ object DetectCommand {
 
         val data: Map<String, JsonElement> = filtersJson.flatMap { it.entries }.associate { it.key to it.value }
 
-        val filtersX: List<FiltersX>? = try {
-            filtersJson.map { convertToFiltersXObject(it) }
-        } catch (e: Exception) {
-            null
-        }
+        val filtersX: List<FiltersX> = filtersJson.map { convertToFiltersXObject(it.jsonObject) }
 
         val (status, warning) = validateJsonElement(data, FiltersXValidateField.entries.toTypedArray())
         return REQ(subscriptionId, filtersX) to (status to warning)
     }
+
     private fun parseCloseCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size != 2 || jsonArray[1] !is JsonPrimitive) {
             throw IllegalArgumentException("Invalid CLOSE command format")

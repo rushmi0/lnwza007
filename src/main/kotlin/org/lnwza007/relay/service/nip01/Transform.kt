@@ -38,7 +38,6 @@ object Transform : VerificationFactory() {
     }
 
 
-
     fun convertToEventObject(field: Map<String, JsonElement>): Event {
         return Event(
             id = field["id"]?.jsonPrimitive?.contentOrNull,
@@ -61,8 +60,7 @@ object Transform : VerificationFactory() {
 
 
     fun JsonObject.toFiltersX(): FiltersX {
-        val json = Json { ignoreUnknownKeys = true }
-        return json.decodeFromJsonElement<FiltersX>(this)
+        return Json.decodeFromJsonElement<FiltersX>(this)
     }
 
     fun JsonObject.toEvent(): Event {

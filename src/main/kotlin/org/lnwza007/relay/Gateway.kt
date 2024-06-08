@@ -12,9 +12,9 @@ import io.micronaut.websocket.annotation.ServerWebSocket
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.lnwza007.relay.service.nip01.*
+import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
 import org.lnwza007.relay.service.nip01.command.AUTH
 import org.lnwza007.relay.service.nip01.command.CLOSE
-import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
 import org.lnwza007.relay.service.nip01.command.EVENT
 import org.lnwza007.relay.service.nip01.command.REQ
 import org.lnwza007.relay.service.nip01.response.RelayResponse
@@ -64,8 +64,8 @@ class Gateway @Inject constructor(
                 is REQ -> {
                     if (status) {
                         LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
-                        LOG.info("tag: ${command.filtersX?.get(0)?.tags}")
-                        LOG.info("tag: ${command.filtersX?.get(1)?.tags}")
+                        LOG.info("REQ: ${command.filtersX[0]}")
+                        LOG.info("REQ: ${command.filtersX[1]}")
                         RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
                     } else {
                         RelayResponse.NOTICE(warning).toClient(session)

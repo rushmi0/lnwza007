@@ -163,6 +163,12 @@ Content-Type: application/json
 ]
 
 ###
+WEBSOCKET ws://localhost:6624
+Content-Type: application/json
+
+["REQ","NL8B4QXaHY1TNG8sfe1vT",{"#p":["3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65"],"kinds":[1,6,16,7,9735,2004,30023],"limit":50}]
+
+###
 # ทดสอบให้แจ้งปัญหา
 WEBSOCKET ws://localhost:6624
 Content-Type: application/json
