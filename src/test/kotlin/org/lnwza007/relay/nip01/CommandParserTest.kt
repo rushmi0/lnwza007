@@ -1,8 +1,10 @@
 package org.lnwza007.relay.nip01
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.lnwza007.relay.service.nip01.command.CLOSE
+import org.lnwza007.relay.service.nip01.command.Command
 import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
 import org.lnwza007.relay.service.nip01.command.EVENT
 import org.lnwza007.relay.service.nip01.command.REQ
@@ -27,17 +29,20 @@ class CommandParserTest {
             ]
         """.trimIndent()
 
-        val command = parseCommand(json) as EVENT
+        val (command, _) = parseCommand(json)
+        command as EVENT
         val event = command.event
 
-        // เพิ่ม assertion ตรวจสอบว่า event ถูกสร้างด้วยข้อมูลที่ถูกต้อง
-        assert(event.id == "000006d8c378af1779d2feebc7603a125d99eca0ccf1085959b307f64e5dd358")
-        assert(event.pubkey == "a48380f4cfcc1ad5378294fcac36439770f9c878dd880ffa94bb74ea54a6f243")
-        assert(event.createAt?.toInt() == 1651794653)
-        assert(event.kind?.toInt() == 1)
-        assert(event.tags == listOf(listOf("nonce", "776797", "20")))
-        assert(event.content == "It's just me mining my own business")
-        assert(event.signature == "284622fc0a3f4f1303455d5175f7ba962a3300d136085b9566801bc2e0699de0c7e31e44c81fb40ad9049173742e904713c3594a1da0fc5d2382a25c11aba977")
+        assertEquals(event.id, "000006d8c378af1779d2feebc7603a125d99eca0ccf1085959b307f64e5dd358")
+        assertEquals(event.pubkey, "a48380f4cfcc1ad5378294fcac36439770f9c878dd880ffa94bb74ea54a6f243")
+        assertEquals(event.createAt?.toInt(), 1651794653)
+        assertEquals(event.kind?.toInt(), 1)
+        assertEquals(event.tags, listOf(listOf("nonce", "776797", "20")))
+        assertEquals(event.content, "It's just me mining my own business")
+        assertEquals(
+            event.signature,
+            "284622fc0a3f4f1303455d5175f7ba962a3300d136085b9566801bc2e0699de0c7e31e44c81fb40ad9049173742e904713c3594a1da0fc5d2382a25c11aba977"
+        )
     }
 
     @Test
@@ -51,17 +56,20 @@ class CommandParserTest {
             ]
         """.trimIndent()
 
-        val command = parseCommand(json) as REQ
+        val (command, _) = parseCommand(json)
+        command as REQ
+
         val subscriptionId = command.subscriptionId
         val filters = command.filtersX
 
-        assert(subscriptionId == "ffff")
-        assert(filters?.size == 2)
-        assert(filters?.get(0)?.search == "purple")
-        filters?.get(0)?.kinds?.let { assert(it.containsAll(listOf(1))) }
-        assert(filters?.get(0)?.since?.toInt() == 1715181359)
-        filters?.get(0)?.kinds?.let { assert(it.containsAll(listOf(1))) }
-        filters?.get(0)?.authors?.let {
+        assertEquals(subscriptionId, "ffff")
+        assertEquals(filters.size, 2)
+        assertEquals(filters[0].search, "purple")
+
+        filters[0].kinds?.let { assert(it.containsAll(listOf(1))) }
+        assertEquals(filters[0].since?.toInt(), 1715181359)
+        filters[1].kinds?.let { assert(it.containsAll(listOf(1))) }
+        filters[1].authors?.let {
             assert(
                 it.containsAll(
                     listOf("161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa")
@@ -74,10 +82,11 @@ class CommandParserTest {
     fun `parse valid CLOSE command`() {
         val json = """["CLOSE", "ffff"]"""
 
-        val command = parseCommand(json) as CLOSE
+        val (command, _) = parseCommand(json)
+        command as CLOSE
         val subscriptionId = command.subscriptionId
 
-        assert(subscriptionId == "ffff")
+        assertEquals(subscriptionId, "ffff")
     }
 
     @Test
@@ -87,7 +96,11 @@ class CommandParserTest {
         val exception = assertThrows<IllegalArgumentException> {
             parseCommand(json)
         }
-        assert(exception.message == "Invalid command format")
+
+        assertEquals(
+            exception.message,
+            "Invalid: command format"
+        )
     }
 
     @Test
@@ -97,6 +110,56 @@ class CommandParserTest {
         val exception = assertThrows<IllegalArgumentException> {
             parseCommand(json)
         }
-        assert(exception.message == "Invalid JSON format")
+        assertEquals(exception.message, "Invalid: JSON format")
     }
+
+    @Test
+    fun `parse valid complex REQ command`() {
+        val json = """
+            [
+                "REQ",
+                "8wHEWFsnIvKCWTb-4PMak",
+                {
+                    "#d":[
+                        "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
+                        "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
+                        "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"
+                    ],
+                    "kinds":[1,6,16,7,9735,2004,30023],
+                    "limit":50
+                },
+                {
+                    "kinds": [4],
+                    "#p": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"]
+                }
+            ]
+        """.trimIndent()
+
+        val (command, _) = parseCommand(json)
+        command as REQ
+
+        val subscriptionId = command.subscriptionId
+        val filters = command.filtersX
+
+        assertEquals(subscriptionId, "8wHEWFsnIvKCWTb-4PMak")
+        assertEquals(filters.size, 2)
+
+        // First filter assertions
+        assertEquals(
+            filters[0].tags?.d, listOf(
+                "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
+                "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"
+            ).toSet()
+        )
+        filters[0].kinds?.let { assert(it.containsAll(listOf(1, 6, 16, 7, 9735, 2004, 30023))) }
+        assertEquals(filters[0].limit?.toInt(), 50)
+
+        // Second filter assertions
+        filters[1].kinds?.let { assert(it.containsAll(listOf(4))) }
+        assertEquals(
+            filters[1].tags?.p,
+            listOf("161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa").toSet()
+        )
+    }
+
 }

@@ -8,7 +8,6 @@ import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.service.nip01.Transform.convertToFiltersXObject
 import org.lnwza007.relay.service.nip01.Transform.toEvent
-import org.lnwza007.relay.service.nip01.Transform.toFiltersX
 import org.lnwza007.relay.service.nip01.Transform.validateJsonElement
 
 @Serializable
