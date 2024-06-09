@@ -64,8 +64,6 @@ class Gateway @Inject constructor(
                 is REQ -> {
                     if (status) {
                         LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
-                        LOG.info("REQ: ${command.filtersX[0]}")
-                        LOG.info("REQ: ${command.filtersX[1]}")
                         RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
                     } else {
                         RelayResponse.NOTICE(warning).toClient(session)
@@ -73,7 +71,7 @@ class Gateway @Inject constructor(
                 }
 
                 is CLOSE -> {
-                    LOG.info("close request for subscription ID: ${command.subscriptionId}")
+                    LOG.info("close request for subscription ID: ${command.subscriptionId} on $session")
                     RelayResponse.CLOSED(subscriptionId = command.subscriptionId, message = "").toClient(session)
                 }
 
@@ -93,7 +91,7 @@ class Gateway @Inject constructor(
 
     @OnClose
     fun onClose(session: WebSocketSession) {
-
+        LOG.info("${PURPLE}close: ${RESET}$session")
     }
 
     private val LOG: Logger = LoggerFactory.getLogger(Gateway::class.java)

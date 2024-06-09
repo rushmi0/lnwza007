@@ -3,6 +3,8 @@ package org.lnwza007.relay.service.nip01.response
 import io.micronaut.websocket.WebSocketSession
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.util.ShiftTo.toJsonString
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 sealed class RelayResponse<out T> {
 
@@ -27,12 +29,23 @@ sealed class RelayResponse<out T> {
     }
 
     fun toClient(session: WebSocketSession) {
-        val payload = this.toJson()
-        session.sendSync(payload)
-
-        if (this is CLOSED) {
-            session.close()
+        if (session.isOpen) {
+            val payload = this.toJson()
+            try {
+                session.sendSync(payload)
+                if (this is CLOSED) {
+                    session.close()
+                }
+            } catch (e: Exception) {
+                LOG.error("Error sending WebSocket message: ${e.message}")
+            }
+        } else {
+            LOG.warn("Attempted to send message to closed WebSocket session.")
         }
+    }
+
+    companion object {
+        private val LOG: Logger = LoggerFactory.getLogger(RelayResponse::class.java)
     }
 
 }

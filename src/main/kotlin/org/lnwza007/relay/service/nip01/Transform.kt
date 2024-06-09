@@ -21,14 +21,17 @@ object Transform : VerificationFactory() {
             }
 
         return FiltersX(
-            ids = field["ids"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet(),
-            authors = field["authors"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet(),
-            kinds = field["kinds"]?.jsonArray?.map { it.jsonPrimitive.long }?.toSet(),
+            ids = field["ids"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet() ?: emptySet(),
+            authors = field["authors"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet() ?: emptySet(),
+            kinds = field["kinds"]?.jsonArray?.map { it.jsonPrimitive.long }?.toSet() ?: emptySet(),
             tags = Tags(
-                e = tags["#e"],
-                d = tags["#d"],
-                a = tags["#a"],
-                p = tags["#p"]
+                e = tags["#e"] ?: emptySet(),
+                d = tags["#d"] ?: emptySet(),
+                a = tags["#a"] ?: emptySet(),
+                p = tags["#p"] ?: emptySet(),
+                q = tags["#q"] ?: emptySet(),
+                k = tags["#k"] ?: emptySet(),
+                m = tags["#m"] ?: emptySet(),
             ),
             since = field["since"]?.jsonPrimitive?.longOrNull,
             until = field["until"]?.jsonPrimitive?.longOrNull,

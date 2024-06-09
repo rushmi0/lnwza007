@@ -14,9 +14,11 @@ enum class FiltersXValidateField(
     TEG_P("#p", ArrayList::class.java),
     TAG_A("#a", ArrayList::class.java),
     TAG_D("#d", ArrayList::class.java),
+    TAG_M("#m", ArrayList::class.java),
+    TAG_K("#k", ArrayList::class.java),
+    TAG_Q("#q", ArrayList::class.java),
     SINCE("since", Long::class.java),
     UNTIL("until", Long::class.java),
     LIMIT("limit", Long::class.java),
     SEARCH("search", String::class.java)
-
 }

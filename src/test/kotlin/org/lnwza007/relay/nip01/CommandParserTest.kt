@@ -3,9 +3,9 @@ package org.lnwza007.relay.nip01
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.lnwza007.relay.service.nip01.command.CLOSE
-import org.lnwza007.relay.service.nip01.command.Command
+import org.lnwza007.relay.modules.FiltersX
 import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
+import org.lnwza007.relay.service.nip01.command.CLOSE
 import org.lnwza007.relay.service.nip01.command.EVENT
 import org.lnwza007.relay.service.nip01.command.REQ
 import java.lang.IllegalArgumentException
@@ -138,13 +138,12 @@ class CommandParserTest {
         val (command, _) = parseCommand(json)
         command as REQ
 
-        val subscriptionId = command.subscriptionId
-        val filters = command.filtersX
+        val subscriptionId: String = command.subscriptionId
+        val filters: List<FiltersX> = command.filtersX
 
         assertEquals(subscriptionId, "8wHEWFsnIvKCWTb-4PMak")
         assertEquals(filters.size, 2)
 
-        // First filter assertions
         assertEquals(
             filters[0].tags?.d, listOf(
                 "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
@@ -154,7 +153,6 @@ class CommandParserTest {
         filters[0].kinds?.let { assert(it.containsAll(listOf(1, 6, 16, 7, 9735, 2004, 30023))) }
         assertEquals(filters[0].limit?.toInt(), 50)
 
-        // Second filter assertions
         filters[1].kinds?.let { assert(it.containsAll(listOf(4))) }
         assertEquals(
             filters[1].tags?.p,

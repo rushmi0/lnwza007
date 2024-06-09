@@ -23,7 +23,7 @@ data class REQ(val subscriptionId: String, val filtersX: List<FiltersX>) : Comma
 data class CLOSE(val subscriptionId: String) : Command()
 
 @Serializable
-data class AUTH(val challenge: String) : Command()
+data class AUTH(val challenge: String, val event: Event) : Command()
 
 object DetectCommand {
 
@@ -50,7 +50,7 @@ object DetectCommand {
 
     private fun parseEventCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size != 2 || jsonArray[1] !is JsonObject) {
-            throw IllegalArgumentException("Invalid EVENT command format")
+            throw IllegalArgumentException("Invalid: EVENT command format")
         }
         val eventJson = jsonArray[1].jsonObject
         val event: Event = eventJson.toEvent()
@@ -62,7 +62,7 @@ object DetectCommand {
 
     private fun parseReqCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size < 3 || jsonArray[1] !is JsonPrimitive || jsonArray.drop(2).any { it !is JsonObject }) {
-            throw IllegalArgumentException("Invalid REQ command format")
+            throw IllegalArgumentException("Invalid: REQ command format")
         }
         val subscriptionId: String = jsonArray[1].jsonPrimitive.content
         val filtersJson: List<JsonObject> = jsonArray.drop(2).map { it.jsonObject }
@@ -77,7 +77,7 @@ object DetectCommand {
 
     private fun parseCloseCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size != 2 || jsonArray[1] !is JsonPrimitive) {
-            throw IllegalArgumentException("Invalid CLOSE command format")
+            throw IllegalArgumentException("Invalid: CLOSE command format")
         }
         val subscriptionId = jsonArray[1].jsonPrimitive.content
         return CLOSE(subscriptionId) to (true to "")

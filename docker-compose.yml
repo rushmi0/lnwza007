@@ -29,3 +29,9 @@ services:
     networks:
       - dev_network
 
+  cloudflared-tunnel:
+    container_name: cloudflared-tunnel
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token eyJhIjoiMjlmY2I1ZjcyNmRmMDExYjgwYzliZjQyNmMyNmQwODQiLCJ0IjoiOTE2YTQ3M2YtYThiYS00Zjg1LTgxOGUtNDZmMGNjMTdhNWE4IiwicyI6Ik9UWmxNMkpsWVRjdFpUaGlOaTAwWkdFNUxXSXlOVFl0WTJaaFpUSXlNVEppTVdFNSJ9
+
