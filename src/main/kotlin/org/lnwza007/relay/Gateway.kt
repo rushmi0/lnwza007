@@ -11,6 +11,8 @@ import io.micronaut.websocket.annotation.OnOpen
 import io.micronaut.websocket.annotation.ServerWebSocket
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.lnwza007.relay.modules.TAG_D
+import org.lnwza007.relay.modules.TagElement
 import org.lnwza007.relay.service.nip01.*
 import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
 import org.lnwza007.relay.service.nip01.command.AUTH
@@ -51,39 +53,38 @@ class Gateway @Inject constructor(
     fun onMessage(message: String, session: WebSocketSession) {
         LOG.info("message: \n$message")
 
-        try {
-            val (command, validationResult) = parseCommand(message)
-            val (status, warning) = validationResult
-            when (command) {
+        val (command, validationResult) = parseCommand(message)
+        val (status, warning) = validationResult
+        when (command) {
 
-                is EVENT -> {
-                    LOG.info("event: ${command.event}")
-                    RelayResponse.OK(eventId = command.event.id!!, isSuccess = status, message = warning).toClient(session)
-                }
+            is EVENT -> {
+                LOG.info("event: ${command.event}")
+                RelayResponse.OK(eventId = command.event.id!!, isSuccess = status, message = warning).toClient(session)
+            }
 
-                is REQ -> {
-                    if (status) {
-                        LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
-                        RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
-                    } else {
-                        RelayResponse.NOTICE(warning).toClient(session)
-                    }
-                }
+            is REQ -> {
+                if (status) {
+                    LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
+                    val tagElements = command.filtersX[0].tags
+                    println(tagElements.entries)
 
-                is CLOSE -> {
-                    LOG.info("close request for subscription ID: ${command.subscriptionId} on $session")
-                    RelayResponse.CLOSED(subscriptionId = command.subscriptionId, message = "").toClient(session)
-                }
-
-                else -> {
-                    LOG.warn("Unknown command")
-                    RelayResponse.NOTICE("Unknown command").toClient(session)
+                    val values: Set<String> = command.filtersX[0].tags.flatMap { it.value }.toSet()
+                    println(values)
+                    RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
+                } else {
+                    RelayResponse.NOTICE(warning).toClient(session)
                 }
             }
 
-        } catch (e: Exception) {
-            LOG.error("Failed to handle command: ${e.message}")
-            RelayResponse.NOTICE("ERROR: ${e.message}").toClient(session)
+            is CLOSE -> {
+                LOG.info("close request for subscription ID: ${command.subscriptionId} on $session")
+                RelayResponse.CLOSED(subscriptionId = command.subscriptionId, message = "").toClient(session)
+            }
+
+            else -> {
+                LOG.warn("Unknown command")
+                RelayResponse.NOTICE("Unknown command").toClient(session)
+            }
         }
 
     }

@@ -4,8 +4,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.lnwza007.relay.modules.FiltersX
+import org.lnwza007.relay.modules.TAG_D
+import org.lnwza007.relay.modules.TAG_P
+import org.lnwza007.relay.modules.TagElement
 import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
 import org.lnwza007.relay.service.nip01.command.CLOSE
+import org.lnwza007.relay.service.nip01.command.DetectCommand
 import org.lnwza007.relay.service.nip01.command.EVENT
 import org.lnwza007.relay.service.nip01.command.REQ
 import java.lang.IllegalArgumentException
@@ -66,7 +70,7 @@ class CommandParserTest {
         assertEquals(filters.size, 2)
         assertEquals(filters[0].search, "purple")
 
-        filters[0].kinds?.let { assert(it.containsAll(listOf(1))) }
+        assert(filters[0].kinds.containsAll(listOf(1)))
         assertEquals(filters[0].since?.toInt(), 1715181359)
         filters[1].kinds?.let { assert(it.containsAll(listOf(1))) }
         filters[1].authors?.let {
@@ -113,27 +117,28 @@ class CommandParserTest {
         assertEquals(exception.message, "Invalid: JSON format")
     }
 
+
     @Test
     fun `parse valid complex REQ command`() {
         val json = """
-            [
-                "REQ",
-                "8wHEWFsnIvKCWTb-4PMak",
-                {
-                    "#d":[
-                        "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
-                        "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
-                        "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"
-                    ],
-                    "kinds":[1,6,16,7,9735,2004,30023],
-                    "limit":50
-                },
-                {
-                    "kinds": [4],
-                    "#p": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"]
-                }
-            ]
-        """.trimIndent()
+        [
+            "REQ",
+            "8wHEWFsnIvKCWTb-4PMak",
+            {
+                "#d":[
+                    "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
+                    "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
+                    "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"
+                ],
+                "kinds":[1,6,16,7,9735,2004,30023],
+                "limit":50
+            },
+            {
+                "kinds": [4],
+                "#p": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"]
+            }
+        ]
+    """.trimIndent()
 
         val (command, _) = parseCommand(json)
         command as REQ
@@ -144,20 +149,34 @@ class CommandParserTest {
         assertEquals(subscriptionId, "8wHEWFsnIvKCWTb-4PMak")
         assertEquals(filters.size, 2)
 
+        val tagsD: Set<String>? = filters[0].tags[TAG_D]
         assertEquals(
-            filters[0].tags?.d, listOf(
+            tagsD,
+            setOf(
                 "3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65",
                 "161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"
-            ).toSet()
+            )
         )
-        filters[0].kinds?.let { assert(it.containsAll(listOf(1, 6, 16, 7, 9735, 2004, 30023))) }
-        assertEquals(filters[0].limit?.toInt(), 50)
 
-        filters[1].kinds?.let { assert(it.containsAll(listOf(4))) }
+//        val kinds = filters[0].kinds.map { it }
+//        println(kinds)
+//        println(kinds::class.java)
+//        println(listOf(1, 6, 16, 7, 9735, 2004, 30023))
+//        println(arrayListOf(1, 6, 16, 7, 9735, 2004, 30023)::class.java)
+//
+//        assertEquals(
+//            filters[0].kinds.map { it },
+//            arrayListOf(1, 6, 16, 7, 9735, 2004, 30023)
+//        )
+        assertEquals(filters[0].limit, 50)
+
         assertEquals(
-            filters[1].tags?.p,
-            listOf("161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa").toSet()
+            filters[1].kinds, setOf(4L)
+        )
+        assertEquals(
+            filters[1].tags[TAG_P], setOf("161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa")
         )
     }
+
 
 }

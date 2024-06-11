@@ -4,7 +4,7 @@ import jakarta.inject.Singleton
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX
-import org.lnwza007.relay.modules.Tags
+import org.lnwza007.relay.modules.TagElement
 import org.slf4j.LoggerFactory
 
 @Singleton
@@ -12,27 +12,35 @@ object Transform : VerificationFactory() {
 
     private val LOG = LoggerFactory.getLogger(Transform::class.java)
 
-    fun convertToFiltersXObject(field: Map<String, JsonElement>): FiltersX {
-        val tagFields = setOf("#e", "#d", "#a", "#p")
-        val tags: Map<String, Set<String>> = field.keys
-            .filter { it in tagFields }
-            .associateWith { tag ->
-                field[tag]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet() ?: emptySet()
+    private fun Map<String, JsonElement>.toTagMap(): Map<TagElement, Set<String>> {
+        return this.filterKeys { it.startsWith("#") }
+            .mapKeys { (key, _) -> TagElement.valueOf(key.removePrefix("#")) }
+            .mapValues { (_, value) ->
+                value.jsonArray.mapNotNull { it.jsonPrimitive.contentOrNull }.toSet()
             }
+    }
 
+
+    fun convertToFiltersXObject(field: Map<String, JsonElement>): FiltersX {
+        /*
+        val tags: Map<TagElement, Set<String>> = field.keys
+            .filter { it.startsWith("#") } // เลือกเฉพาะ key ที่ขึ้นต้นด้วย #
+            .associateWith { tag ->
+                field[tag]?.jsonArray?.mapNotNull {
+                    it.jsonPrimitive.contentOrNull
+                }?.toSet() ?: emptySet()
+            }
+            .mapKeys { (key, _) ->
+                TagElement.valueOf(key.removePrefix("#"))
+            }
+         */
+
+        val tags: Map<TagElement, Set<String>> = field.toTagMap()
         return FiltersX(
-            ids = field["ids"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet() ?: emptySet(),
-            authors = field["authors"]?.jsonArray?.map { it.jsonPrimitive.content }?.toSet() ?: emptySet(),
-            kinds = field["kinds"]?.jsonArray?.map { it.jsonPrimitive.long }?.toSet() ?: emptySet(),
-            tags = Tags(
-                e = tags["#e"] ?: emptySet(),
-                d = tags["#d"] ?: emptySet(),
-                a = tags["#a"] ?: emptySet(),
-                p = tags["#p"] ?: emptySet(),
-                q = tags["#q"] ?: emptySet(),
-                k = tags["#k"] ?: emptySet(),
-                m = tags["#m"] ?: emptySet(),
-            ),
+            ids = field["ids"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }?.toSet() ?: emptySet(),
+            authors = field["authors"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }?.toSet() ?: emptySet(),
+            kinds = field["kinds"]?.jsonArray?.mapNotNull { it.jsonPrimitive.long }?.toSet() ?: emptySet(),
+            tags = tags,
             since = field["since"]?.jsonPrimitive?.longOrNull,
             until = field["until"]?.jsonPrimitive?.longOrNull,
             limit = field["limit"]?.jsonPrimitive?.longOrNull,

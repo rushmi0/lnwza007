@@ -9,19 +9,19 @@ enum class StandardizedTags(
     val otherParameters: String?,
     val nip: String
 ) : CharSequence {
-    E("e", "event id (hex)", "relay URL, marker, pubkey (hex)", "01, 10"),
-    P("p", "pubkey (hex)", "relay URL, petname", "01, 02"),
-    A("a", "coordinates to an event", "relay URL", "01"),
-    D("d", "identifier", "--", "01"),
-    G("g", "geohash", "--", "52"),
-    I("i", "identity", "proof", "39"),
-    K("k", "kind number (string)", "--", "18, 25, 72"),
-    L("l", "label, label namespace", "--", "32"),
-    L_("L", "label namespace", "--", "32"),
-    M("m", "MIME type", "--", "94"),
-    Q("q", "event id (hex)", "relay URL", "18"),
-    R("r", "a reference (URL, etc)", "petname | relay url, marker", "24 | 65"),
-    T("t", "hashtag", "--", ""),
+    TAG_E("e", "event id (hex)", "relay URL, marker, pubkey (hex)", "01, 10"),
+    TAG_P("p", "pubkey (hex)", "relay URL, petname", "01, 02"),
+    TAG_A("a", "coordinates to an event", "relay URL", "01"),
+    TAG_D("d", "identifier", "--", "01"),
+    TAG_G("g", "geohash", "--", "52"),
+    TAG_I("i", "identity", "proof", "39"),
+    TAG_K("k", "kind number (string)", "--", "18, 25, 72"),
+    TAG_L("l", "label, label namespace", "--", "32"),
+    TAG_L_("L", "label namespace", "--", "32"),
+    TAG_M("m", "MIME type", "--", "94"),
+    TAG_Q("q", "event id (hex)", "relay URL", "18"),
+    TAG_R("r", "a reference (URL, etc)", "petname | relay url, marker", "24 | 65"),
+    TAG_T("t", "hashtag", "--", ""),
     ALT("alt", "summary", "--", "31"),
     AMOUNT("amount", "millisatoshis, stringified", "--", "57"),
     BOLT11("bolt11", "bolt11 invoice", "--", "57"),
@@ -61,13 +61,17 @@ enum class StandardizedTags(
             return script.map { it.tage }
         }
 
+        fun parse(script: StandardizedTags): String {
+            return script.tage
+        }
+
         fun reverseParse(script: List<String>): List<StandardizedTags> {
             return script.map { valueOf(it) }
         }
 
         fun valueOf(tage: String): StandardizedTags {
             return entries.find { it.tage == tage }
-                ?: throw IllegalArgumentException("Invalid StandardizedTag tage: $tage")
+                ?: throw IllegalArgumentException("Invalid Standardized Tag: $tage")
         }
 
         @Internal
@@ -92,11 +96,20 @@ enum class StandardizedTags(
 
 }
 
+
 fun main() {
 
-    val eventName = StandardizedTags.E
-    val pubkey = StandardizedTags.P
-    val coordinates = StandardizedTags.A
+    val eventName = StandardizedTags.TAG_E
+    val pubkey = StandardizedTags.TAG_P
+    val coordinates = StandardizedTags.TAG_A
+
+    val parseSingle = StandardizedTags.parse(eventName)
+    println(parseSingle)
+
+    when (eventName) {
+        StandardizedTags.TAG_E -> println("Event tag")
+        else -> println("Other tag")
+    }
 
     val script = listOf(eventName, pubkey, coordinates)
     println(eventName.tage)
