@@ -14,7 +14,7 @@ sealed class RelayResponse<out T> {
 
     /**
      * EVENT เป็นการตอบกลับประเภทเหตุการณ์
-     * @param subscriptionId ไอดีของการสมัครสมาชิกที่เกิดเหตุการณ์
+     * @param subscriptionId ไอดีที่ใช้ในการติดตามหรืออ้างอิงไปถึงการร้องขอนั้นๆ จากไคลเอนต์
      * @param event เหตุการณ์ที่เกิดขึ้น
      * ใช้ในการส่งเหตุการณ์ที่ได้รับการร้องขอจากไคลเอนต์
      */
@@ -22,7 +22,7 @@ sealed class RelayResponse<out T> {
 
     /**
      * OK เป็นการตอบกลับประเภทการยืนยันความสำเร็จของการดำเนินการ
-     * @param eventId ไอดีของเหตุการณ์ที่ได้รับการยืนยัน
+     * @param eventId ไอดีของเหตุการณ์ที่ได้รับจากไคลเอนต์
      * @param isSuccess ผลลัพธ์ว่าการดำเนินการสำเร็จหรือไม่
      * @param message ข้อความเพิ่มเติม
      * ใช้ในการบอกสถานะการยอมรับหรือปฏิเสธข้อความ EVENT จากไคลเอนต์
@@ -33,14 +33,14 @@ sealed class RelayResponse<out T> {
 
     /**
      * EOSE เป็นการตอบกลับเมื่อสิ้นสุดการส่งข้อมูลของการสมัครสมาชิก
-     * @param subscriptionId ไอดีของการสมัครสมาชิก
+     * @param subscriptionId ไอดีที่ใช้ในการติดตามหรืออ้างอิงไปถึงการร้องนั้นๆ ขอจากไคลเอนต์
      * ใช้ในการบอกว่าจบการส่งเหตุการณ์ที่เก็บไว้แล้ว และจะเริ่มส่งเหตุการณ์ใหม่ๆ ที่ได้รับในเวลาจริง
      */
     data class EOSE(val subscriptionId: String) : RelayResponse<Unit>()
 
     /**
      * CLOSED เป็นการตอบกลับเมื่อการสมัครสมาชิกถูกปิด
-     * @param subscriptionId ไอดีของการสมัครสมาชิก
+     * @param subscriptionId ไอดีที่ใช้ในการติดตามการสมัครสมาชิก
      * @param message ข้อความเพิ่มเติม
      * ใช้ในการบอกว่าการสมัครสมาชิกถูกปิดจากฝั่งเซิร์ฟเวอร์
      * สามารถส่งได้เมื่อ relay ปฏิเสธการตอบรับการสมัครสมาชิกหรือเมื่อ relay ตัดสินใจยกเลิกการสมัครสมาชิกก่อนที่ไคลเอนต์จะยกเลิกหรือส่ง CLOSE
@@ -89,6 +89,7 @@ sealed class RelayResponse<out T> {
     }
 
     companion object {
+        // สร้างอ็อบเจ็กต์ของ Logger
         private val LOG: Logger = LoggerFactory.getLogger(RelayResponse::class.java)
     }
 
