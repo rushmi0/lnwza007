@@ -39,11 +39,11 @@ sealed class RelayResponse<out T> {
     data class EOSE(val subscriptionId: String) : RelayResponse<Unit>()
 
     /**
-     * CLOSED เป็นการตอบกลับเมื่อการสมัครสมาชิกถูกปิด
-     * @param subscriptionId ไอดีที่ใช้ในการติดตามการสมัครสมาชิก
+     * CLOSED เป็นการตอบกลับเมื่อการปิดการเชื่อต่อการสื่อสาร
+     * @param subscriptionId ไอดีที่ใช้ในการติดตามหรืออ้างอิงไปถึงการร้องนั้นๆ ขอจากไคลเอนต์
      * @param message ข้อความเพิ่มเติม
-     * ใช้ในการบอกว่าการสมัครสมาชิกถูกปิดจากฝั่ง Relay
-     * สามารถส่งได้เมื่อ Relay ปฏิเสธการตอบรับการสมัครสมาชิกหรือเมื่อ Relay ตัดสินใจยกเลิกการสมัครสมาชิกก่อนที่ไคลเอนต์จะยกเลิกหรือส่ง CLOSE
+     * ใช้ในการบอกว่าการเชื่อมต่อถูกปิดจากฝั่ง Relay
+     * สามารถส่งได้เมื่อ Relay ปฏิเสธการตอบรับการการเชื่อมต่อการสื่อสารหรือเมื่อ Relay ตัดสินใจยกเลิกการเชื่อมต่อก่อนที่ไคลเอนต์จะยกเลิกหรือส่ง CLOSE
      */
     data class CLOSED(val subscriptionId: String, val message: String = "") : RelayResponse<Unit>()
 
