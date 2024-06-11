@@ -32,7 +32,7 @@ sealed class RelayResponse<out T> {
     data class OK(val eventId: String, val isSuccess: Boolean, val message: String = "") : RelayResponse<Unit>()
 
     /**
-     * EOSE เป็นการตอบกลับเมื่อสิ้นสุดการส่งข้อมูลของการสมัครสมาชิก
+     * EOSE เป็นการตอบกลับเมื่อสิ้นสุดการส่งข้อมูลของการร้องนั้นๆ
      * @param subscriptionId ไอดีที่ใช้ในการติดตามหรืออ้างอิงไปถึงการร้องนั้นๆ ขอจากไคลเอนต์
      * ใช้ในการบอกว่าจบการส่งเหตุการณ์ที่ Relay เก็บไว้แล้ว และจะเริ่มส่งเหตุการณ์ใหม่ๆ ที่ได้รับตามเวลาจริง
      */
