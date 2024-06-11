@@ -55,7 +55,7 @@ sealed class RelayResponse<out T> {
     data class NOTICE(val message: String = "") : RelayResponse<Unit>()
 
     /**
-     * ฟังก์ชัน toJson ใช้ในการแปลงข้อมูล ที่ใช้ในการตอบกลับจากรูปแบบ Kotlin Object เป็น JSON string
+     * ฟังก์ชัน toJson ใช้ในการแปลงข้อมูล ที่ใช้ในการตอบกลับจากรูปแบบ Kotlin Object ไปเป็น JSON string
      * @return JSON string ที่ใช้ในการตอบกลับ
      */
     fun toJson(): String {
