@@ -70,7 +70,7 @@ sealed class RelayResponse<out T> {
 
     /**
      * ฟังก์ชัน toClient ใช้ในการส่งการตอบกลับไปยังไคลเอนต์ผ่าน WebSocket
-     * @param session WebSocketSession ที่ใช้ในการสื่อสารกับไคลเอนต์
+     * @param session ใช้ในการสื่อสารกับไคลเอนต์
      */
     fun toClient(session: WebSocketSession) {
         if (session.isOpen) {
