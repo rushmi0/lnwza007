@@ -26,7 +26,7 @@ sealed class RelayResponse<out T> {
      * @param isSuccess ผลลัพธ์ว่าการดำเนินการสำเร็จหรือไม่
      * @param message ข้อความเพิ่มเติม
      * ใช้ในการบอกสถานะการยอมรับหรือปฏิเสธข้อความ EVENT จากไคลเอนต์
-     * จะมีพารามิเตอร์ที่ 2 เป็น true เมื่อเหตุการณ์ได้รับการยอมรับจาก relay และ false ในกรณีอื่นๆ เช่นการปฏิเสธ EVENT จากไคลเอนต์
+     * จะมีพารามิเตอร์ที่ 2 เป็น true เมื่อเหตุการณ์ได้รับการยอมรับจาก Relay และ false ในกรณีอื่นๆ เช่นการปฏิเสธ EVENT จากไคลเอนต์
      * พารามิเตอร์ที่ 3 จะต้องมีเสมอ อาจจะเป็นสตริงว่างเมื่อพารามิเตอร์ที่ 2 เป็น true หรือเป็น false และแจ้งเหตุผลที่ปฏิเสธ EVENT นั้นๆ
      */
     data class OK(val eventId: String, val isSuccess: Boolean, val message: String = "") : RelayResponse<Unit>()
@@ -34,7 +34,7 @@ sealed class RelayResponse<out T> {
     /**
      * EOSE เป็นการตอบกลับเมื่อสิ้นสุดการส่งข้อมูลของการสมัครสมาชิก
      * @param subscriptionId ไอดีที่ใช้ในการติดตามหรืออ้างอิงไปถึงการร้องนั้นๆ ขอจากไคลเอนต์
-     * ใช้ในการบอกว่าจบการส่งเหตุการณ์ที่เก็บไว้แล้ว และจะเริ่มส่งเหตุการณ์ใหม่ๆ ที่ได้รับในเวลาจริง
+     * ใช้ในการบอกว่าจบการส่งเหตุการณ์ที่ Relay เก็บไว้แล้ว และจะเริ่มส่งเหตุการณ์ใหม่ๆ ที่ได้รับตามเวลาจริง
      */
     data class EOSE(val subscriptionId: String) : RelayResponse<Unit>()
 
@@ -42,21 +42,21 @@ sealed class RelayResponse<out T> {
      * CLOSED เป็นการตอบกลับเมื่อการสมัครสมาชิกถูกปิด
      * @param subscriptionId ไอดีที่ใช้ในการติดตามการสมัครสมาชิก
      * @param message ข้อความเพิ่มเติม
-     * ใช้ในการบอกว่าการสมัครสมาชิกถูกปิดจากฝั่งเซิร์ฟเวอร์
-     * สามารถส่งได้เมื่อ relay ปฏิเสธการตอบรับการสมัครสมาชิกหรือเมื่อ relay ตัดสินใจยกเลิกการสมัครสมาชิกก่อนที่ไคลเอนต์จะยกเลิกหรือส่ง CLOSE
+     * ใช้ในการบอกว่าการสมัครสมาชิกถูกปิดจากฝั่ง Relay
+     * สามารถส่งได้เมื่อ Relay ปฏิเสธการตอบรับการสมัครสมาชิกหรือเมื่อ Relay ตัดสินใจยกเลิกการสมัครสมาชิกก่อนที่ไคลเอนต์จะยกเลิกหรือส่ง CLOSE
      */
     data class CLOSED(val subscriptionId: String, val message: String = "") : RelayResponse<Unit>()
 
     /**
      * NOTICE เป็นการตอบกลับประเภทการแจ้งเตือน
      * @param message ข้อความแจ้งเตือน
-     * ใช้ในการส่งข้อความแจ้งเตือนที่อ่านได้โดยมนุษย์หรือข้อความอื่นๆ ไปยังไคลเอนต์
+     * ใช้ในการส่งข้อความแจ้งเตือนที่อ่านได้โดยมนุษย์หรือข้อความแจ้งปัญหาหรือข้อผิดพลาดอื่นๆ ที่ต้องการไปยังไคลเอนต์
      */
     data class NOTICE(val message: String = "") : RelayResponse<Unit>()
 
     /**
-     * ฟังก์ชัน toJson ใช้ในการแปลงการตอบกลับเป็น JSON string
-     * @return JSON string ที่แทนการตอบกลับ
+     * ฟังก์ชัน toJson ใช้ในการแปลงการตอบกลับรูปแบบ Kotlin Object เป็น JSON string
+     * @return JSON string ที่ใช้ในการตอบกลับ
      */
     fun toJson(): String {
         return when (this) {
@@ -89,7 +89,6 @@ sealed class RelayResponse<out T> {
     }
 
     companion object {
-        // สร้างอ็อบเจ็กต์ของ Logger
         private val LOG: Logger = LoggerFactory.getLogger(RelayResponse::class.java)
     }
 
