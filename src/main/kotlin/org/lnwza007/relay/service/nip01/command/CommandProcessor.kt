@@ -31,22 +31,22 @@ object CommandProcessor {
             throw IllegalArgumentException("Invalid: command format")
         }
 
-        return when (val type = jsonElement[0].jsonPrimitive.content) {
-            "EVENT" -> parseEventCommand(jsonElement)
-            "REQ" -> parseReqCommand(jsonElement)
-            "CLOSE" -> parseCloseCommand(jsonElement)
+        return when (val cmd = jsonElement[0].jsonPrimitive.content) {
+            "EVENT" -> eventCommand(jsonElement)
+            "REQ" -> reqCommand(jsonElement)
+            "CLOSE" -> closeCommand(jsonElement)
             "AUTH" -> TODO("Not yet implemented")
-            else -> throw IllegalArgumentException("Unknown command: $type")
+            else -> throw IllegalArgumentException("Unknown command: $cmd")
         }
     }
 
 
     /**
-     * parseEventCommand ใช้ในการแยกและวิเคราะห์คำสั่งประเภท EVENT
+     * eventCommand ใช้ในการแยกและวิเคราะห์คำสั่งประเภท EVENT
      * @param jsonArray JsonArray ที่มีข้อมูลเป็นคำสั่งประเภท EVENT
      * @return Pair ที่มีค่าเป็นคำสั่งและ Pair ที่มีค่าเป็นสถานะการประมวลผลและข้อความเตือน
      */
-    private fun parseEventCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
+    private fun eventCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size != 2 || jsonArray[1] !is JsonObject) {
             throw IllegalArgumentException("Invalid: EVENT command format")
         }
@@ -60,11 +60,11 @@ object CommandProcessor {
 
 
     /**
-     * parseReqCommand ใช้ในการแยกและวิเคราะห์คำสั่งประเภท REQ
+     * reqCommand ใช้ในการแยกและวิเคราะห์คำสั่งประเภท REQ
      * @param jsonArray JsonArray ที่มีข้อมูลเป็นคำสั่งประเภท REQ
      * @return Pair ที่มีค่าเป็นคำสั่งและ Pair ที่มีค่าเป็นสถานะการประมวลผลและข้อความเตือน
      */
-    private fun parseReqCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
+    private fun reqCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size < 3 || jsonArray[1] !is JsonPrimitive || jsonArray.drop(2).any { it !is JsonObject }) {
             throw IllegalArgumentException("Invalid: REQ command format")
         }
@@ -81,11 +81,11 @@ object CommandProcessor {
 
 
     /**
-     * parseCloseCommand ใช้ในการแยกและวิเคราะห์คำสั่งประเภท CLOSE
+     * closeCommand ใช้ในการแยกและวิเคราะห์คำสั่งประเภท CLOSE
      * @param jsonArray JsonArray ที่มีข้อมูลเป็นคำสั่งประเภท CLOSE
      * @return Pair ที่มีค่าเป็นคำสั่งและ Pair ที่มีค่าเป็นสถานะการประมวลผลและข้อความเตือน
      */
-    private fun parseCloseCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
+    private fun closeCommand(jsonArray: JsonArray): Pair<Command, Pair<Boolean, String>> {
         if (jsonArray.size != 2 || jsonArray[1] !is JsonPrimitive) {
             throw IllegalArgumentException("Invalid: CLOSE command format")
         }

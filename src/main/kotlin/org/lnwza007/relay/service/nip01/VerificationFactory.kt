@@ -118,24 +118,22 @@ open class VerificationFactory {
     }
 
     private fun validateFiltersX(receive: Map<String, JsonElement>): Pair<Boolean, String> {
-        val obj = convertToFiltersXObject(receive)
-        LOG.info("receive: $receive")
-        LOG.info("FiltersX: $obj")
+        val filter = convertToFiltersXObject(receive)
 
         return Pair(true, "Not yet implemented")
     }
 
     private fun validateEvent(receive: Map<String, JsonElement>): Pair<Boolean, String> {
-        val obj = convertToEventObject(receive)
+        val event = convertToEventObject(receive)
 
-        val id = generateId(obj)
-        if (!Schnorr.verify(id, obj.pubkey!!, obj.signature!!)) {
+        val id = generateId(event)
+        if (!Schnorr.verify(id, event.pubkey!!, event.signature!!)) {
             val warning = "Invalid: signature"
             LOG.info(warning)
             return Pair(false, warning)
         }
 
-        if (obj.id != id) {
+        if (event.id != id) {
             val warning = "Invalid: event id"
             LOG.info(warning)
             return Pair(false, warning)

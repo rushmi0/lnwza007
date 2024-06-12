@@ -1,7 +1,9 @@
 package org.lnwza007.database.statement
 
 
+import io.reactivex.rxjava3.core.Single
 import jakarta.inject.Inject
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import nostr.relay.infra.database.tables.Event.EVENT
@@ -18,8 +20,8 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
 
 
     override suspend fun saveEvent(event: Event): Boolean {
-        return parallelIO(200) {
-            runCatching {
+        return parallelIO(100) {
+            Single.fromCallable {
 
                 /**
                  * INSERT INTO EVENT
@@ -63,20 +65,21 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
                     DSL.`val`(event.content).cast(SQLDataType.CLOB),
                     DSL.`val`(event.signature).cast(SQLDataType.VARCHAR.length(128))
                 ).execute() > 0
-
-            }.onSuccess { result ->
-                LOG.info("Event saved: ${if (result) event.id else "Failed"}")
-            }.onFailure { e ->
-                LOG.error("Error saving event: ${e.message}")
-                false
-            }.getOrThrow()
+            }
+                .doOnSuccess { result ->
+                    LOG.info("Event saved: ${if (result) event.id else "Failed"}")
+                }
+                .doOnError { e ->
+                    LOG.error("Error saving event: ${e.message}")
+                }
+                .blockingGet()
         }
     }
 
 
     override suspend fun deleteEvent(eventId: String): Boolean {
         return parallelIO {
-            runCatching {
+            Single.fromCallable {
 
                 /**
                  * DELETE
@@ -89,18 +92,51 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
                     .execute()
 
                 deletedCount > 0
-            }.onSuccess { result ->
-                LOG.info("Event deleted: ${if (result) eventId else "Failed"}")
-            }.onFailure { e ->
-                LOG.error("Error deleting event: ${e.message}")
-                false
-            }.getOrThrow()
+            }
+                .doOnSuccess { result ->
+                    LOG.info("Event deleted: ${if (result) eventId else "Failed"}")
+                }
+                .doOnError { e ->
+                    LOG.error("Error deleting event: ${e.message}")
+                }
+                .blockingGet()
         }
     }
 
 
     override suspend fun selectAll(): List<Event> {
-        TODO("Not yet implemented")
+        return parallelIO {
+            Single.fromCallable {
+
+                /**
+                 * SELECT *
+                 * FROM event;
+                 */
+
+                val result = enforce.select().from(EVENT)
+                //LOG.info("${result.fetch()}")
+
+                result.fetch()
+                    .map { record ->
+                        Event(
+                            id = record[EVENT.EVENT_ID],
+                            pubkey = record[EVENT.PUBKEY],
+                            createAt = record[EVENT.CREATED_AT].toLong(),
+                            kind = record[EVENT.KIND].toLong(),
+                            tags = Json.decodeFromString(record[EVENT.TAGS].toString()),
+                            content = record[EVENT.CONTENT],
+                            signature = record[EVENT.SIG]
+                        )
+                    }
+            }
+                .doOnSuccess { events ->
+                    LOG.info("Events retrieved: ${events.size}")
+                }
+                .doOnError { e ->
+                    LOG.error("Error retrieving events: ${e.message}")
+                }
+                .blockingGet()
+        }
     }
 
 

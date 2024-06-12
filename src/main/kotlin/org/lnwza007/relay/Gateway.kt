@@ -81,9 +81,11 @@ class Gateway @Inject constructor(
         LOG.info("${PURPLE}close: ${RESET}$session")
     }
 
-    private val LOG: Logger = LoggerFactory.getLogger(Gateway::class.java)
 
     companion object {
+
+        private val LOG: Logger = LoggerFactory.getLogger(Gateway::class.java)
+
         const val RESET = "\u001B[0m"
         const val RED = "\u001B[31m"
         const val GREEN = "\u001B[32m"
@@ -93,4 +95,5 @@ class Gateway @Inject constructor(
         const val CYAN = "\u001B[36m"
         const val WHITE = "\u001B[37m"
     }
+
 }

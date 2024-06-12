@@ -7,20 +7,28 @@ import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX
 import org.lnwza007.relay.service.nip01.response.RelayResponse
 import org.lnwza007.relay.service.nip09.EventDeletion
+import org.lnwza007.relay.service.nip13.ProofOfWork
 import org.slf4j.LoggerFactory
 
 class BasicProtocolFlow @Inject constructor(
     private val service: EventServiceImpl,
-    private val nip09: EventDeletion,
-    //    private val nip13: ProofOfWork
+//    private val nip09: EventDeletion,
+//    private val nip13: ProofOfWork
 ) {
 
     suspend fun onEvent(event: Event, status: Boolean, warning: String, session: WebSocketSession) {
-        val result = service.saveEvent(event)
-        LOG.info("Saved event status: $result")
         LOG.info("event: $event")
-        RelayResponse.OK(eventId = event.id!!, isSuccess = status, message = warning).toClient(session)
+
+        if (status) {
+            val result = service.saveEvent(event)
+            LOG.info("Saved event status: $result")
+            RelayResponse.OK(eventId = event.id!!, isSuccess = status, message = warning).toClient(session)
+        } else {
+            RelayResponse.OK(eventId = event.id!!, isSuccess = status, message = warning).toClient(session)
+        }
+
     }
+
 
     suspend fun onRequest(
         subscriptionId: String,
