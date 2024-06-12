@@ -104,36 +104,33 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
     }
 
 
-    override suspend fun selectAll(): List<Event> {
+    override suspend fun selectById(id: String): Event? {
         return parallelIO {
             Single.fromCallable {
 
-                /**
-                 * SELECT *
-                 * FROM event;
-                 */
+                val mainQuery = enforce.selectFrom(EVENT)
+                    .where(EVENT.EVENT_ID.eq(DSL.`val`(id)))
+                    .fetchOne()
 
-                val result = enforce.select().from(EVENT)
-                //LOG.info("${result.fetch()}")
-
-                result.fetch()
-                    .map { record ->
-                        Event(
-                            id = record[EVENT.EVENT_ID],
-                            pubkey = record[EVENT.PUBKEY],
-                            createAt = record[EVENT.CREATED_AT].toLong(),
-                            kind = record[EVENT.KIND].toLong(),
-                            tags = Json.decodeFromString(record[EVENT.TAGS].toString()),
-                            content = record[EVENT.CONTENT],
-                            signature = record[EVENT.SIG]
-                        )
-                    }
+                mainQuery?.let { record ->
+                    Event(
+                        id = record[EVENT.EVENT_ID],
+                        pubkey = record[EVENT.PUBKEY],
+                        createAt = record[EVENT.CREATED_AT].toLong(),
+                        kind = record[EVENT.KIND].toLong(),
+                        tags = Json.decodeFromString<List<List<String>>>(record[EVENT.TAGS].toString()),
+                        content = record[EVENT.CONTENT],
+                        signature = record[EVENT.SIG]
+                    )
+                }!!
             }
-                .doOnSuccess { events ->
-                    LOG.info("Events retrieved: ${events.size}")
+                .doOnSuccess { event ->
+                    event?.let {
+                        LOG.info("Event retrieved: $event")
+                    } ?: LOG.warn("Event not found for ID: $id")
                 }
                 .doOnError { e ->
-                    LOG.error("Error retrieving events: ${e.message}")
+                    LOG.error("Error retrieving event: ${e.message}")
                 }
                 .blockingGet()
         }

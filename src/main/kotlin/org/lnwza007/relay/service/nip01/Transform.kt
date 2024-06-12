@@ -21,19 +21,6 @@ object Transform : VerificationFactory() {
     }
 
     fun convertToFiltersXObject(field: Map<String, JsonElement>): FiltersX {
-        /*
-        val tags: Map<TagElement, Set<String>> = field.keys
-            .filter { it.startsWith("#") } // เลือกเฉพาะ key ที่ขึ้นต้นด้วย #
-            .associateWith { tag ->
-                field[tag]?.jsonArray?.mapNotNull {
-                    it.jsonPrimitive.contentOrNull
-                }?.toSet() ?: emptySet()
-            }
-            .mapKeys { (key, _) ->
-                TagElement.valueOf(key.removePrefix("#"))
-            }
-         */
-
         return FiltersX(
             ids = field["ids"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }?.toSet() ?: emptySet(),
             authors = field["authors"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }?.toSet() ?: emptySet(),

@@ -17,16 +17,21 @@ class BasicProtocolFlow @Inject constructor(
 ) {
 
     suspend fun onEvent(event: Event, status: Boolean, warning: String, session: WebSocketSession) {
-        LOG.info("event: $event")
+        LOG.info("Received event: $event")
 
         if (status) {
-            val result = service.saveEvent(event)
-            LOG.info("Saved event status: $result")
-            RelayResponse.OK(eventId = event.id!!, isSuccess = status, message = warning).toClient(session)
+            val existingEvent = service.selectById(event.id!!)
+            if (existingEvent == null) {
+                val result: Boolean = service.saveEvent(event)
+                LOG.info("Event saved status: $result")
+                RelayResponse.OK(eventId = event.id, isSuccess = result, message = warning).toClient(session)
+            } else {
+                LOG.info("Event with ID ${event.id} already exists in the database.")
+                RelayResponse.OK(eventId = event.id, isSuccess = false, message = "Duplicate: already have this event").toClient(session)
+            }
         } else {
-            RelayResponse.OK(eventId = event.id!!, isSuccess = status, message = warning).toClient(session)
+            RelayResponse.OK(eventId = event.id!!, isSuccess = false, message = warning).toClient(session)
         }
-
     }
 
 

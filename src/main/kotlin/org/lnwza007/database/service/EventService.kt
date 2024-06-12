@@ -9,6 +9,7 @@ interface EventService {
 
     suspend fun deleteEvent(eventId: String) : Boolean
 
-    suspend fun selectAll(): List<Event>
+    suspend fun selectById(id: String): Event?
+
 
 }
