@@ -1,29 +1,35 @@
 package org.lnwza007.relay
 
+import io.micronaut.context.annotation.Bean
+import io.micronaut.core.annotation.Introspected
 import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Header
+import io.micronaut.runtime.http.scope.RequestScope
 import io.micronaut.websocket.WebSocketSession
 import io.micronaut.websocket.annotation.OnClose
 import io.micronaut.websocket.annotation.OnMessage
 import io.micronaut.websocket.annotation.OnOpen
 import io.micronaut.websocket.annotation.ServerWebSocket
+
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
-import org.lnwza007.relay.modules.TAG_D
-import org.lnwza007.relay.modules.TagElement
+
 import org.lnwza007.relay.service.nip01.*
-import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
-import org.lnwza007.relay.service.nip01.command.AUTH
+import org.lnwza007.relay.service.nip01.command.CommandProcessor.parse
 import org.lnwza007.relay.service.nip01.command.CLOSE
 import org.lnwza007.relay.service.nip01.command.EVENT
 import org.lnwza007.relay.service.nip01.command.REQ
 import org.lnwza007.relay.service.nip01.response.RelayResponse
 import org.lnwza007.relay.service.nip11.RelayInformation
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@Bean
+@RequestScope
+@Introspected
 @ServerWebSocket("/")
 class Gateway @Inject constructor(
     private val nip01: BasicProtocolFlow,
@@ -50,45 +56,25 @@ class Gateway @Inject constructor(
     }
 
     @OnMessage
-    fun onMessage(message: String, session: WebSocketSession) {
+    suspend fun onMessage(message: String, session: WebSocketSession) {
         LOG.info("message: \n$message")
 
-        val (command, validationResult) = parseCommand(message)
-        val (status, warning) = validationResult
-        when (command) {
+        try {
+            val (command, validationResult) = parse(message) //  Pair<Command?, Pair<Boolean, String>>
+            val (status, warning) = validationResult
 
-            is EVENT -> {
-                LOG.info("event: ${command.event}")
-                RelayResponse.OK(eventId = command.event.id!!, isSuccess = status, message = warning).toClient(session)
+            when (command) {
+                is EVENT -> nip01.onEvent(command.event, status, warning, session)
+                is REQ -> nip01.onRequest(command.subscriptionId, command.filtersX, status, warning, session)
+                is CLOSE -> nip01.onClose(command.subscriptionId, session)
+                else -> nip01.onUnknown(session)
             }
 
-            is REQ -> {
-                if (status) {
-                    LOG.info("request for subscription ID: ${command.subscriptionId} with filters: ${command.filtersX}")
-                    val tagElements = command.filtersX[0].tags
-                    println(tagElements.entries)
-
-                    val values: Set<String> = command.filtersX[0].tags.flatMap { it.value }.toSet()
-                    println(values)
-                    RelayResponse.EOSE(subscriptionId = command.subscriptionId).toClient(session)
-                } else {
-                    RelayResponse.NOTICE(warning).toClient(session)
-                }
-            }
-
-            is CLOSE -> {
-                LOG.info("close request for subscription ID: ${command.subscriptionId} on $session")
-                RelayResponse.CLOSED(subscriptionId = command.subscriptionId, message = "").toClient(session)
-            }
-
-            else -> {
-                LOG.warn("Unknown command")
-                RelayResponse.NOTICE("Unknown command").toClient(session)
-            }
+        } catch (e: IllegalArgumentException) {
+            LOG.error("Failed to handle command: ${e.message}")
+            RelayResponse.NOTICE("ERROR: ${e.message}").toClient(session)
         }
-
     }
-
 
     @OnClose
     fun onClose(session: WebSocketSession) {
@@ -107,5 +93,4 @@ class Gateway @Inject constructor(
         const val CYAN = "\u001B[36m"
         const val WHITE = "\u001B[37m"
     }
-
 }

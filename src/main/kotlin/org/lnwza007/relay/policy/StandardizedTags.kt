@@ -74,15 +74,7 @@ enum class StandardizedTags(
                 ?: throw IllegalArgumentException("Invalid Standardized Tag: $tage")
         }
 
-        @Internal
-        @NonNull
-        fun getDefaultDescription(tage: String): String {
-            return try {
-                valueOf(tage).description
-            } catch (e: IllegalArgumentException) {
-                "CUSTOM"
-            }
-        }
+
 
     }
 

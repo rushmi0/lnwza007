@@ -10,7 +10,7 @@ plugins {
     id("io.micronaut.application") version "4.3.8"
     id("io.micronaut.test-resources") version "4.3.8"
     id("io.micronaut.aot") version "4.3.8"
-    id("nu.studer.jooq") version "9.0"
+    id("nu.studer.jooq") version "8.2"
     id("org.sonarqube") version "4.4.1.3373"
     kotlin("plugin.serialization") version "1.9.23"
 }
@@ -39,7 +39,7 @@ dependencies {
 
     implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
 
-    jooqGenerator("org.postgresql:postgresql:42.5.4")
+    jooqGenerator("org.postgresql:postgresql:42.3.9")
     runtimeOnly("org.postgresql:postgresql")
 
     // https://github.com/Kotlin/kotlinx.serialization

@@ -15,7 +15,7 @@ class VerificationFactoryTest {
     private val verifyData = VerificationFactory()
 
     @Test
-    fun `test invalid event data`() = runBlocking {
+    fun `test invalid event data`()  {
         val invalidData = """
             {
                 "kind":0,
@@ -31,7 +31,7 @@ class VerificationFactoryTest {
         val jsonEvent: Map<String, JsonElement> = invalidData.toJsonElementMap()
         val commandEvent: Pair<Boolean, String?> = verifyData.validateDataType(jsonEvent, EventValidateField.entries.toTypedArray())
         assertEquals(
-            Pair(false, "invalid data type at [created_at] field. Expected: long"),
+            Pair(false, "Invalid: data type at [created_at] field"),
             commandEvent
         )
     }
@@ -55,7 +55,7 @@ class VerificationFactoryTest {
         val jsonEvent: Map<String, JsonElement> = validData.toJsonElementMap()
         val commandEvent = verifyData.validateDataType(jsonEvent, EventValidateField.entries.toTypedArray())
         assertEquals(
-            Pair(false, "invalid: signature"),
+            Pair(false, "Invalid: signature"),
             commandEvent
         )
     }

@@ -1,18 +1,14 @@
 package org.lnwza007.database.service
 
-import nostr.relay.infra.database.tables.Event
+import org.lnwza007.relay.modules.Event
 
 
 interface EventService {
 
+    suspend fun saveEvent(event: Event) : Boolean
 
-    suspend fun addEvent(event: Event)
+    suspend fun deleteEvent(eventId: String) : Boolean
 
-    suspend fun deleteEvent(event: Event)
-
-    suspend fun selectEventByPOW()
-
-
+    suspend fun selectAll(): List<Event>
 
 }
-

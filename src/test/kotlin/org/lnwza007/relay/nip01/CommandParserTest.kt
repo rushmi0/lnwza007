@@ -6,10 +6,8 @@ import org.junit.jupiter.api.assertThrows
 import org.lnwza007.relay.modules.FiltersX
 import org.lnwza007.relay.modules.TAG_D
 import org.lnwza007.relay.modules.TAG_P
-import org.lnwza007.relay.modules.TagElement
-import org.lnwza007.relay.service.nip01.command.DetectCommand.parseCommand
+import org.lnwza007.relay.service.nip01.command.CommandProcessor.parse
 import org.lnwza007.relay.service.nip01.command.CLOSE
-import org.lnwza007.relay.service.nip01.command.DetectCommand
 import org.lnwza007.relay.service.nip01.command.EVENT
 import org.lnwza007.relay.service.nip01.command.REQ
 import java.lang.IllegalArgumentException
@@ -33,7 +31,7 @@ class CommandParserTest {
             ]
         """.trimIndent()
 
-        val (command, _) = parseCommand(json)
+        val (command, _) = parse(json)
         command as EVENT
         val event = command.event
 
@@ -60,7 +58,7 @@ class CommandParserTest {
             ]
         """.trimIndent()
 
-        val (command, _) = parseCommand(json)
+        val (command, _) = parse(json)
         command as REQ
 
         val subscriptionId = command.subscriptionId
@@ -72,21 +70,19 @@ class CommandParserTest {
 
         assert(filters[0].kinds.containsAll(listOf(1)))
         assertEquals(filters[0].since?.toInt(), 1715181359)
-        filters[1].kinds?.let { assert(it.containsAll(listOf(1))) }
-        filters[1].authors?.let {
-            assert(
-                it.containsAll(
-                    listOf("161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa")
-                )
+        assert(filters[1].kinds.containsAll(listOf(1)))
+        assert(
+            filters[1].authors.containsAll(
+                listOf("161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa")
             )
-        }
+        )
     }
 
     @Test
     fun `parse valid CLOSE command`() {
         val json = """["CLOSE", "ffff"]"""
 
-        val (command, _) = parseCommand(json)
+        val (command, _) = parse(json)
         command as CLOSE
         val subscriptionId = command.subscriptionId
 
@@ -98,7 +94,7 @@ class CommandParserTest {
         val json = """[]"""
 
         val exception = assertThrows<IllegalArgumentException> {
-            parseCommand(json)
+            parse(json)
         }
 
         assertEquals(
@@ -112,7 +108,7 @@ class CommandParserTest {
         val json = "invalid json"
 
         val exception = assertThrows<IllegalArgumentException> {
-            parseCommand(json)
+            parse(json)
         }
         assertEquals(exception.message, "Invalid: JSON format")
     }
@@ -140,7 +136,7 @@ class CommandParserTest {
         ]
     """.trimIndent()
 
-        val (command, _) = parseCommand(json)
+        val (command, _) = parse(json)
         command as REQ
 
         val subscriptionId: String = command.subscriptionId
@@ -158,16 +154,19 @@ class CommandParserTest {
             )
         )
 
-//        val kinds = filters[0].kinds.map { it }
-//        println(kinds)
-//        println(kinds::class.java)
-//        println(listOf(1, 6, 16, 7, 9735, 2004, 30023))
-//        println(arrayListOf(1, 6, 16, 7, 9735, 2004, 30023)::class.java)
-//
-//        assertEquals(
-//            filters[0].kinds.map { it },
-//            arrayListOf(1, 6, 16, 7, 9735, 2004, 30023)
-//        )
+        /*
+        val kinds = filters[0].kinds.map { it }
+        println(kinds)
+        println(kinds::class.java)
+        println(listOf(1, 6, 16, 7, 9735, 2004, 30023))
+        println(arrayListOf(1, 6, 16, 7, 9735, 2004, 30023)::class.java)
+
+        assertEquals(
+            filters[0].kinds.map { it },
+            arrayListOf(1, 6, 16, 7, 9735, 2004, 30023)
+        )
+         */
+
         assertEquals(filters[0].limit, 50)
 
         assertEquals(

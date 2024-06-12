@@ -66,6 +66,8 @@ class RelayResponseTest {
     @Test
     fun `test EVENT send to Client`() {
         val session = mock(WebSocketSession::class.java)
+        `when`(session.isOpen).thenReturn(true)
+
         val relayResponse = RelayResponse.EVENT("b1a649ebe8", event)
         val expectedJson = """["EVENT","b1a649ebe8",${event.toJsonString()}]"""
 

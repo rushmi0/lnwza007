@@ -125,15 +125,6 @@ enum class EventKinds(val code: Int, val description: String, val nip: String) :
                 ?: throw IllegalArgumentException("Invalid EventKinds code: $code")
         }
 
-        @Internal
-        @NonNull
-        fun getDefaultDescription(code: Int): String {
-            return try {
-                valueOf(code).description
-            } catch (e: IllegalArgumentException) {
-                "CUSTOM"
-            }
-        }
 
     }
 
@@ -169,9 +160,5 @@ fun main() {
     val eventCode = 3
     val follows = EventKinds.valueOf(eventCode)
     println("Event Kind: ${follows.code} - ${follows.description} (NIP: ${follows.nip})")
-
-    // 3. ใช้ค่าโค้ดเพื่อรับคำอธิบายเริ่มต้นของเหตุการณ์
-    val description = EventKinds.getDefaultDescription(5)
-    println("Default description for event code 5: $description")
 
 }

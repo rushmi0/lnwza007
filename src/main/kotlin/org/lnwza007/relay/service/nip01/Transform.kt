@@ -20,7 +20,6 @@ object Transform : VerificationFactory() {
             }
     }
 
-
     fun convertToFiltersXObject(field: Map<String, JsonElement>): FiltersX {
         /*
         val tags: Map<TagElement, Set<String>> = field.keys
@@ -35,12 +34,11 @@ object Transform : VerificationFactory() {
             }
          */
 
-        val tags: Map<TagElement, Set<String>> = field.toTagMap()
         return FiltersX(
             ids = field["ids"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }?.toSet() ?: emptySet(),
             authors = field["authors"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }?.toSet() ?: emptySet(),
             kinds = field["kinds"]?.jsonArray?.mapNotNull { it.jsonPrimitive.long }?.toSet() ?: emptySet(),
-            tags = tags,
+            tags = field.toTagMap(),
             since = field["since"]?.jsonPrimitive?.longOrNull,
             until = field["until"]?.jsonPrimitive?.longOrNull,
             limit = field["limit"]?.jsonPrimitive?.longOrNull,
@@ -54,9 +52,9 @@ object Transform : VerificationFactory() {
             id = field["id"]?.jsonPrimitive?.contentOrNull,
             pubkey = field["pubkey"]?.jsonPrimitive?.contentOrNull,
             createAt = field["created_at"]?.jsonPrimitive?.longOrNull,
-            content = field["content"]?.jsonPrimitive?.contentOrNull,
             kind = field["kind"]?.jsonPrimitive?.longOrNull,
             tags = field["tags"]?.jsonArray?.map { it.jsonArray.map { tag -> tag.jsonPrimitive.content } },
+            content = field["content"]?.jsonPrimitive?.contentOrNull,
             signature = field["sig"]?.jsonPrimitive?.contentOrNull
         )
     }
@@ -69,7 +67,18 @@ object Transform : VerificationFactory() {
         return convertToEventObject(this)
     }
 
+    fun JsonObject.toFiltersX(): FiltersX {
+        val fieldMap = this.toMap()
+        return convertToFiltersXObject(fieldMap)
+    }
 
+    fun JsonObject.toEvent(): Event {
+        val fieldMap = this.toMap()
+        return convertToEventObject(fieldMap)
+    }
+
+
+    /*
     fun JsonObject.toFiltersX(): FiltersX {
         return Json.decodeFromJsonElement<FiltersX>(this)
     }
@@ -77,5 +86,6 @@ object Transform : VerificationFactory() {
     fun JsonObject.toEvent(): Event {
         return Json.decodeFromJsonElement<Event>(this)
     }
+     */
 
 }

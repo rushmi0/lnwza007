@@ -4,7 +4,7 @@ CREATE TABLE event
     pubkey     VARCHAR(64)  NOT NULL,
     created_at INT          NOT NULL,
     kind       INT          NOT NULL,
+    tags       jsonb        NOT NULL,
     content    TEXT         NOT NULL,
-    sig        VARCHAR(128) NOT NULL,
-    tags       jsonb        NOT NULL
+    sig        VARCHAR(128) NOT NULL
 );

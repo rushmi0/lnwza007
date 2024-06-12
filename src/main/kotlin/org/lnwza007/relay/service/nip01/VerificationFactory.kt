@@ -2,6 +2,7 @@ package org.lnwza007.relay.service.nip01
 
 import jakarta.inject.Singleton
 import kotlinx.serialization.json.*
+import org.lnwza007.relay.modules.TagElement
 import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.policy.NostrField
@@ -13,8 +14,7 @@ import org.slf4j.LoggerFactory
 
 @Singleton
 open class VerificationFactory {
-
-
+    
     fun validateJsonElement(
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
@@ -28,8 +28,7 @@ open class VerificationFactory {
             else -> Pair(true, "")
         }
     }
-
-
+    
     private fun checkFieldNames(
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
@@ -37,31 +36,41 @@ open class VerificationFactory {
         val allowedFields = relayPolicy.map { it.fieldName }.toSet()
         val invalidFields: List<String> = receive.keys.filter { it !in allowedFields && !isValidTag(it) }
 
-        val errorMessage = if (invalidFields.isNotEmpty()) buildErrorMessage(invalidFields) else ""
+        val warning = if (invalidFields.isNotEmpty()) buildErrorMessage(invalidFields) else ""
 
-        return if (errorMessage.isEmpty()) Pair(true, "") else Pair(false, errorMessage)
+        return if (warning.isEmpty()) Pair(true, "") else Pair(false, warning)
     }
 
     private fun isValidTag(tag: String): Boolean {
-        return tag.startsWith("#") && tag.length == 2 && setOf("#e", "#d", "#a", "#p").contains(tag)
+        if (!tag.startsWith("#") || tag.length < 2) {
+            return false
+        }
+        val tagKey = tag.substring(1)
+        return try {
+            TagElement.valueOf(tagKey)
+            true
+        } catch (e: IllegalArgumentException) {
+            false
+        }
     }
 
     private fun buildErrorMessage(invalidFields: List<String>): String {
-        return "unsupported: ${invalidFields.joinToString(", ")} fields"
+        return "Unsupported: [${invalidFields.joinToString(", ")}] fields"
     }
 
     fun validateDataType(
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
     ): Pair<Boolean, String> {
+        
         receive.forEach { (fieldName, fieldValue) ->
             val expectedType = relayPolicy.find { policy -> policy.fieldName == fieldName }?.fieldType
             val actualType = inspectDataType(fieldValue)
 
             if (expectedType != actualType) {
-                val errorMessage = "invalid data type at [$fieldName] field. Expected: $expectedType"
-                LOG.info(errorMessage)
-                return Pair(false, errorMessage)
+                val warning = "Invalid: data type at [$fieldName] field"
+                LOG.info(warning)
+                return Pair(false, warning)
             }
         }
 
@@ -69,9 +78,9 @@ open class VerificationFactory {
             val missingFields = relayPolicy.filterNot { field -> receive.containsKey(field.fieldName) }
             if (missingFields.isNotEmpty()) {
                 val missingFieldNames = missingFields.joinToString(", ") { field -> field.fieldName }
-                val errorMessage = "invalid: missing fields: [$missingFieldNames]"
-                LOG.info(errorMessage)
-                return Pair(false, errorMessage)
+                val warning = "Invalid: missing fields: [$missingFieldNames]"
+                LOG.info(warning)
+                return Pair(false, warning)
             }
         }
 
@@ -104,7 +113,7 @@ open class VerificationFactory {
         return when {
             relayPolicy.isArrayOfPolicy<FiltersXValidateField>() -> validateFiltersX(receive)
             relayPolicy.isArrayOfPolicy<EventValidateField>() -> validateEvent(receive)
-            else -> Pair(false, "unsupported: relay policy")
+            else -> Pair(false, "Unsupported: relay policy")
         }
     }
 
@@ -121,15 +130,15 @@ open class VerificationFactory {
 
         val id = generateId(obj)
         if (!Schnorr.verify(id, obj.pubkey!!, obj.signature!!)) {
-            val errorMessage = "invalid: signature"
-            LOG.info(errorMessage)
-            return Pair(false, errorMessage)
+            val warning = "Invalid: signature"
+            LOG.info(warning)
+            return Pair(false, warning)
         }
 
         if (obj.id != id) {
-            val errorMessage = "invalid: event id"
-            LOG.info(errorMessage)
-            return Pair(false, errorMessage)
+            val warning = "Invalid: event id"
+            LOG.info(warning)
+            return Pair(false, warning)
         }
 
         return Pair(true, "")

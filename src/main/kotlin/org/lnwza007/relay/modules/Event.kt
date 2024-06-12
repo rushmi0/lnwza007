@@ -9,9 +9,9 @@ data class Event(
     val pubkey: String? = null,
     @SerialName("created_at")
     val createAt: Long? = null,
-    val content: String? = null,
     val kind: Long? = null,
     val tags: List<List<String>>? = null,
+    val content: String? = null,
     @SerialName("sig")
     val signature: String? = null
 )
