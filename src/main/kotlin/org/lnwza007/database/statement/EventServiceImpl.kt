@@ -3,24 +3,20 @@ package org.lnwza007.database.statement
 
 import io.reactivex.rxjava3.core.Single
 import jakarta.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import nostr.relay.infra.database.tables.Event.EVENT
 import org.jooq.DSLContext
-import org.jooq.SelectWhereStep
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.lnwza007.database.service.EventService
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX
-import org.lnwza007.relay.modules.TagElt
 import org.lnwza007.util.CoroutineManager.parallelIO
 import org.slf4j.LoggerFactory
 
-@OptIn(ExperimentalCoroutinesApi::class)
+
 class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) : EventService {
 
 
@@ -32,7 +28,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
                  * INSERT INTO EVENT
                  * (event_id, pubkey, created_at, kind, tags, content, sig)
                  * VALUES
-                 * (<eventId>, <pubkey>, <createdAt>, <kind>, <tags>, <content>, <sig>)
+                 * (:eventId, :pubkey, :createdAt, :kind, :tags, :content, :sig)
                  */
 
                 enforceSQL.insertInto(
@@ -72,7 +68,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
                 /**
                  * DELETE
                  * FROM event
-                 * WHERE event_id = <eventId>;
+                 * WHERE event_id = :eventId;
                  */
 
                 val deletedCount = enforceSQL.deleteFrom(EVENT)
