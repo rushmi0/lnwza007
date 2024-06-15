@@ -25,7 +25,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
 
 
     override suspend fun saveEvent(event: Event): Boolean {
-        return withContext(Dispatchers.IO.limitedParallelism(64)) {
+        return parallelIO(64) {
             Single.fromCallable {
 
                 /**
@@ -66,7 +66,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
 
 
     override suspend fun deleteEvent(eventId: String): Boolean {
-        return withContext(Dispatchers.IO.limitedParallelism(64)) {
+        return parallelIO(64) {
             Single.fromCallable {
 
                 /**
@@ -94,7 +94,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
 
 
     override suspend fun selectById(id: String): Event? {
-        return withContext(Dispatchers.IO.limitedParallelism(64)) {
+        return parallelIO(64) {
 
             val record = enforceSQL.selectFrom(EVENT)
                 .where(EVENT.EVENT_ID.eq(DSL.`val`(id)))
@@ -117,10 +117,9 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
         }
     }
 
-    //  module.exports = data;
 
     override suspend fun filterList(filters: FiltersX): List<Event> {
-        return parallelIO(64) {
+        return parallelIO(100) {
             Single.fromCallable {
 
                 /**
