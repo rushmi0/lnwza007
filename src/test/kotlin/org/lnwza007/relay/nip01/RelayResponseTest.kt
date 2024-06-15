@@ -13,7 +13,7 @@ class RelayResponseTest {
 
     private val event = Event(
         id = "000006d8c378af1779d2feebc7603a125d99eca0ccf1085959b307f64e5dd358",
-        pubkey = "a48380f4cfcc1ad5378294fcac36439770f9c878dd880ffa94bb74ea54a6f243",
+        pubKey = "a48380f4cfcc1ad5378294fcac36439770f9c878dd880ffa94bb74ea54a6f243",
         createAt = 1651794653,
         kind = 1,
         tags = listOf(listOf("nonce", "776797", "20")),

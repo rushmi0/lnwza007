@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import fr.acinq.secp256k1.Hex
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.Event
+import org.lnwza007.relay.service.nip01.Transform.toJsonString
 import java.security.MessageDigest
 import kotlin.random.Random
 
@@ -44,30 +45,13 @@ object ShiftTo {
         return toByteArray().toSha256().toHex()
     }
 
-    /**
-     * ฟังก์ชัน toJsonString ใช้ในการแปลงข้อมูลใดๆเป็นสตริง JSON
-     * @return สตริง JSON ที่เป็นผลลัพธ์จากการแปลง Object
-     */
-    fun Any.toJsonString(): String {
-        return jacksonObjectMapper().writeValueAsString(this)
-    }
-
-    /**
-     * ฟังก์ชัน toJsonElementMap ใช้ในการแปลงสตริง JSON เป็น Map ของ JsonElement
-     * @return Map ของ JsonElement ที่เป็นผลลัพธ์จากการแปลงสตริง JSON
-     */
-    fun String.toJsonElementMap(): Map<String, JsonElement> {
-        val option = Json { isLenient = true }
-        val jsonElement = option.parseToJsonElement(this)
-        return jsonElement.jsonObject
-    }
 
 
     fun generateId(event: Event): String {
         return lazy {
             arrayListOf(
                 0,
-                event.pubkey,
+                event.pubKey,
                 event.createAt,
                 event.kind,
                 event.tags,

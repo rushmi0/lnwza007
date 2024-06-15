@@ -1,8 +1,8 @@
 # wss://relay.damus.io
 # wss://relay.damus.io
-# ws://localhost:8080
+# ws://localhost:6624
 
-WEBSOCKET ws://localhost:8080
+WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
 [
@@ -21,7 +21,7 @@ Content-Type: application/json
 ]
 ###
 
-WEBSOCKET ws://localhost:8080
+WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
 [
@@ -39,7 +39,7 @@ Content-Type: application/json
 
 ###
 
-WEBSOCKET ws://localhost:8080
+WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
 [
@@ -75,7 +75,7 @@ Content-Type: application/json
 
 
 ###
-WEBSOCKET ws://localhost:8080
+WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
 [
@@ -94,7 +94,7 @@ Content-Type: application/json
 
 
 ###
-WEBSOCKET ws://localhost:8080
+WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
 [
@@ -266,7 +266,7 @@ Content-Type: application/json
 
 ###
 
-WEBSOCKET ws://localhost:8080
+WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
 [
@@ -280,7 +280,7 @@ Content-Type: application/json
 
 ###
 
-WEBSOCKET ws://localhost:8080
+WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
 [
@@ -307,4 +307,19 @@ Content-Type: application/json
   }
 ]
 
+###
+
+WEBSOCKET wss://relay.damus.io
+Content-Type: application/json
+
+[
+  "REQ",
+  "uuuuu",
+  {
+    "authors": [
+      "e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"
+    ],
+    "limit": 2
+  }
+]
 

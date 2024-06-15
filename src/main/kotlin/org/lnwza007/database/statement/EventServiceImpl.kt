@@ -3,51 +3,39 @@ package org.lnwza007.database.statement
 
 import io.reactivex.rxjava3.core.Single
 import jakarta.inject.Inject
-import kotlinx.serialization.decodeFromString
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import nostr.relay.infra.database.tables.Event.EVENT
 import org.jooq.DSLContext
+import org.jooq.SelectWhereStep
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.lnwza007.database.service.EventService
 import org.lnwza007.relay.modules.Event
+import org.lnwza007.relay.modules.FiltersX
+import org.lnwza007.relay.modules.TagElt
 import org.lnwza007.util.CoroutineManager.parallelIO
 import org.slf4j.LoggerFactory
 
-
-class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : EventService {
+@OptIn(ExperimentalCoroutinesApi::class)
+class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) : EventService {
 
 
     override suspend fun saveEvent(event: Event): Boolean {
-        return parallelIO(100) {
+        return withContext(Dispatchers.IO.limitedParallelism(64)) {
             Single.fromCallable {
 
                 /**
                  * INSERT INTO EVENT
-                 * (
-                 *      event_id,
-                 *      pubkey,
-                 *      created_at,
-                 *      kind,
-                 *      tags,
-                 *      content,
-                 *      sig
-                 * )
-                 *
+                 * (event_id, pubkey, created_at, kind, tags, content, sig)
                  * VALUES
-                 * (
-                 *      <eventId>,
-                 *      <pubkey>,
-                 *      <createdAt>,
-                 *      <kind>,
-                 *      <tags>,
-                 *      <content>,
-                 *      <sig>
-                 * )
+                 * (<eventId>, <pubkey>, <createdAt>, <kind>, <tags>, <content>, <sig>)
                  */
 
-                enforce.insertInto(
+                enforceSQL.insertInto(
                     EVENT,
                     EVENT.EVENT_ID,
                     EVENT.PUBKEY,
@@ -58,7 +46,7 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
                     EVENT.SIG
                 ).values(
                     DSL.`val`(event.id).cast(SQLDataType.VARCHAR.length(64)),
-                    DSL.`val`(event.pubkey).cast(SQLDataType.VARCHAR.length(64)),
+                    DSL.`val`(event.pubKey).cast(SQLDataType.VARCHAR.length(64)),
                     DSL.`val`(event.createAt).cast(SQLDataType.INTEGER),
                     DSL.`val`(event.kind).cast(SQLDataType.INTEGER),
                     DSL.`val`(Json.encodeToString(event.tags)).cast(SQLDataType.JSONB),
@@ -78,7 +66,7 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
 
 
     override suspend fun deleteEvent(eventId: String): Boolean {
-        return parallelIO {
+        return withContext(Dispatchers.IO.limitedParallelism(64)) {
             Single.fromCallable {
 
                 /**
@@ -87,7 +75,7 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
                  * WHERE event_id = <eventId>;
                  */
 
-                val deletedCount = enforce.deleteFrom(EVENT)
+                val deletedCount = enforceSQL.deleteFrom(EVENT)
                     .where(EVENT.EVENT_ID.eq(DSL.`val`(eventId)))
                     .execute()
 
@@ -104,38 +92,70 @@ class EventServiceImpl @Inject constructor(private val enforce: DSLContext) : Ev
     }
 
 
+
     override suspend fun selectById(id: String): Event? {
-        return parallelIO {
-            Single.fromCallable {
+        return withContext(Dispatchers.IO.limitedParallelism(64)) {
 
-                val mainQuery = enforce.selectFrom(EVENT)
-                    .where(EVENT.EVENT_ID.eq(DSL.`val`(id)))
-                    .fetchOne()
+            val record = enforceSQL.selectFrom(EVENT)
+                .where(EVENT.EVENT_ID.eq(DSL.`val`(id)))
+                .fetchOne()
 
-                mainQuery?.let { record ->
-                    Event(
-                        id = record[EVENT.EVENT_ID],
-                        pubkey = record[EVENT.PUBKEY],
-                        createAt = record[EVENT.CREATED_AT].toLong(),
-                        kind = record[EVENT.KIND].toLong(),
-                        tags = Json.decodeFromString<List<List<String>>>(record[EVENT.TAGS].toString()),
-                        content = record[EVENT.CONTENT],
-                        signature = record[EVENT.SIG]
-                    )
-                }!!
+            if (record != null) {
+                Event(
+                    id = record[EVENT.EVENT_ID],
+                    pubKey = record[EVENT.PUBKEY],
+                    createAt = record[EVENT.CREATED_AT].toLong(),
+                    kind = record[EVENT.KIND].toLong(),
+                    tags = Json.decodeFromString<List<List<String>>>(record[EVENT.TAGS].toString()),
+                    content = record[EVENT.CONTENT],
+                    signature = record[EVENT.SIG]
+                )
+            } else {
+                LOG.info("Event not found for ID: $id")
+                null
             }
-                .doOnSuccess { event ->
-                    event?.let {
-                        LOG.info("Event retrieved: $event")
-                    } ?: LOG.warn("Event not found for ID: $id")
-                }
-                .doOnError { e ->
-                    LOG.error("Error retrieving event: ${e.message}")
-                }
-                .blockingGet()
         }
     }
 
+    //  module.exports = data;
+
+    override suspend fun filterList(filters: FiltersX): List<Event> {
+        return parallelIO(64) {
+            Single.fromCallable {
+                val query = enforceSQL.selectFrom(EVENT)
+
+                filters.ids.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.EVENT_ID.`in`(it)) }
+                filters.authors.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.PUBKEY.`in`(it)) }
+                filters.kinds.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.KIND.`in`(it)) }
+                filters.tags.forEach { (key, values) ->
+                    // Use @> operator for JSONB containment check
+                    values.forEach { value ->
+                        val sqlString = "{0} @> {1}::jsonb"
+                        val jsonValue = DSL.field(sqlString, Boolean::class.java, EVENT.TAGS, DSL.inline("""[["${key.tag}","$value"]]""", SQLDataType.JSONB))
+                        query.where(jsonValue)
+                    }
+                }
+                filters.since?.let { query.where(EVENT.CREATED_AT.greaterOrEqual(it.toInt())) }
+                filters.until?.let { query.where(EVENT.CREATED_AT.lessOrEqual(it.toInt())) }
+                filters.search?.let { query.where(EVENT.CONTENT.contains(it)) }
+                filters.limit?.let { query.limit(it.toInt()) }
+
+                LOG.info("$query")
+                query.fetch().map { record ->
+                    Event(
+                        id = record[EVENT.EVENT_ID],
+
+                        pubKey = record[EVENT.PUBKEY],
+                        createAt = record[EVENT.CREATED_AT].toLong(),
+                        kind = record[EVENT.KIND].toLong(),
+                        tags = Json.decodeFromString(record[EVENT.TAGS].toString()),
+                        content = record[EVENT.CONTENT],
+                        signature = record[EVENT.SIG]
+                    )
+                }
+            }.blockingGet()
+        }
+    }
 
     companion object {
         private val LOG = LoggerFactory.getLogger(EventServiceImpl::class.java)

@@ -23,6 +23,7 @@ import org.lnwza007.relay.service.nip01.command.EVENT
 import org.lnwza007.relay.service.nip01.command.REQ
 import org.lnwza007.relay.service.nip01.response.RelayResponse
 import org.lnwza007.relay.service.nip11.RelayInformation
+import org.reactivestreams.Publisher
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

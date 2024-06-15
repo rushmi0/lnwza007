@@ -9,14 +9,14 @@ import kotlinx.coroutines.*
 object CoroutineManager {
 
     suspend fun <T> parallelIO(parallelism: Int = 32, block: suspend CoroutineScope.() -> T): T {
-        return withContext(Dispatchers.IO.limitedParallelism(parallelism) + SupervisorJob()) {
+        return withContext(Dispatchers.IO.limitedParallelism(parallelism) + SupervisorJob() + CoroutineName("ParallelIO")) {
             block.invoke(this)
         }
     }
 
 
-    suspend fun <T> parallelDefault(block: suspend CoroutineScope.() -> T): T {
-        return withContext(Dispatchers.Default) {
+    suspend fun <T> parallelDefault(parallelism: Int = 32, block: suspend CoroutineScope.() -> T): T {
+        return withContext(Dispatchers.Default.limitedParallelism(parallelism) + SupervisorJob()) {
             block.invoke(this)
         }
     }

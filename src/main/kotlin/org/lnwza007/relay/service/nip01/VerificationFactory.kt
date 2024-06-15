@@ -2,19 +2,17 @@ package org.lnwza007.relay.service.nip01
 
 import jakarta.inject.Singleton
 import kotlinx.serialization.json.*
-import org.lnwza007.relay.modules.TagElement
+import org.lnwza007.relay.modules.TagElt
 import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.policy.NostrField
 import org.lnwza007.relay.service.nip01.Transform.convertToEventObject
 import org.lnwza007.relay.service.nip01.Transform.convertToFiltersXObject
-import org.lnwza007.util.Schnorr
-import org.lnwza007.util.ShiftTo.generateId
 import org.slf4j.LoggerFactory
 
 @Singleton
 open class VerificationFactory {
-    
+
     fun validateJsonElement(
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
@@ -28,7 +26,7 @@ open class VerificationFactory {
             else -> Pair(true, "")
         }
     }
-    
+
     private fun checkFieldNames(
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
@@ -47,7 +45,7 @@ open class VerificationFactory {
         }
         val tagKey = tag.substring(1)
         return try {
-            TagElement.valueOf(tagKey)
+            TagElt.valueOf(tagKey)
             true
         } catch (e: IllegalArgumentException) {
             false
@@ -62,7 +60,7 @@ open class VerificationFactory {
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
     ): Pair<Boolean, String> {
-        
+
         receive.forEach { (fieldName, fieldValue) ->
             val expectedType = relayPolicy.find { policy -> policy.fieldName == fieldName }?.fieldType
             val actualType = inspectDataType(fieldValue)
@@ -126,17 +124,17 @@ open class VerificationFactory {
     private fun validateEvent(receive: Map<String, JsonElement>): Pair<Boolean, String> {
         val event = convertToEventObject(receive)
 
-        val id = generateId(event)
-        if (!Schnorr.verify(id, event.pubkey!!, event.signature!!)) {
-            val warning = "Invalid: signature"
+        val (isValidId, actualId) = event.isValidEventId()
+        if (!isValidId) {
+            val warning = "Invalid: actual event id $actualId"
             LOG.info(warning)
             return Pair(false, warning)
         }
 
-        if (event.id != id) {
-            val warning = "Invalid: event id"
-            LOG.info(warning)
-            return Pair(false, warning)
+        val (isValidSignature, signatureWarning) = event.isValidSignature()
+        if (!isValidSignature) {
+            LOG.info(signatureWarning)
+            return Pair(false, signatureWarning)
         }
 
         return Pair(true, "")

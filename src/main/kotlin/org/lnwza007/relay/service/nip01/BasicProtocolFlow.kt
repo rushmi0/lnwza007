@@ -8,6 +8,7 @@ import org.lnwza007.relay.modules.FiltersX
 import org.lnwza007.relay.service.nip01.response.RelayResponse
 import org.lnwza007.relay.service.nip09.EventDeletion
 import org.lnwza007.relay.service.nip13.ProofOfWork
+import org.lnwza007.util.CoroutineManager.parallelIO
 import org.slf4j.LoggerFactory
 
 class BasicProtocolFlow @Inject constructor(
@@ -19,19 +20,25 @@ class BasicProtocolFlow @Inject constructor(
     suspend fun onEvent(event: Event, status: Boolean, warning: String, session: WebSocketSession) {
         LOG.info("Received event: $event")
 
-        if (status) {
-            val existingEvent = service.selectById(event.id!!)
-            if (existingEvent == null) {
-                val result: Boolean = service.saveEvent(event)
-                LOG.info("Event saved status: $result")
-                RelayResponse.OK(eventId = event.id, isSuccess = result, message = warning).toClient(session)
+        parallelIO(300) {
+            if (status) {
+                val existingEvent: Event? = service.selectById(event.id!!)
+                if (existingEvent == null) {
+                    // ไม่พบข้อมูลในฐานข้อมูล ดำเนินการบันทึกข้อมูล
+                    val result: Boolean = service.saveEvent(event)
+                    LOG.info("Event saved status: $result")
+                    RelayResponse.OK(eventId = event.id, isSuccess = result, message = warning).toClient(session)
+                } else {
+                    // พบข้อมูลในฐานข้อมูลแล้ว ส่งข้อมูลเป็นค่าซ้ำกลับไปยัง client
+                    LOG.info("Event with ID ${event.id} already exists in the database.")
+                    RelayResponse.OK(eventId = event.id, isSuccess = false, message = "Duplicate: already have this event").toClient(session)
+                }
+
             } else {
-                LOG.info("Event with ID ${event.id} already exists in the database.")
-                RelayResponse.OK(eventId = event.id, isSuccess = false, message = "Duplicate: already have this event").toClient(session)
+                RelayResponse.OK(eventId = event.id!!, isSuccess = false, message = warning).toClient(session)
             }
-        } else {
-            RelayResponse.OK(eventId = event.id!!, isSuccess = false, message = warning).toClient(session)
         }
+
     }
 
 
@@ -43,7 +50,14 @@ class BasicProtocolFlow @Inject constructor(
         session: WebSocketSession
     ) {
         if (status) {
-            LOG.info("request for subscription ID: $subscriptionId with filters: $filtersX")
+            //LOG.info("request for subscription ID: $subscriptionId with filters: $filtersX")
+
+            for (filter in filtersX) {
+                val events = service.filterList(filter)
+                events.forEach { event ->
+                    RelayResponse.EVENT(subscriptionId, event).toClient(session)
+                }
+            }
             RelayResponse.EOSE(subscriptionId = subscriptionId).toClient(session)
         } else {
             RelayResponse.NOTICE(warning).toClient(session)
@@ -58,6 +72,11 @@ class BasicProtocolFlow @Inject constructor(
     fun onUnknown(session: WebSocketSession) {
         LOG.warn("Unknown command")
         RelayResponse.NOTICE("Unknown command").toClient(session)
+    }
+
+
+    private fun processEvent() {
+
     }
 
     private val LOG = LoggerFactory.getLogger(BasicProtocolFlow::class.java)

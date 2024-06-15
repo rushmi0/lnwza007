@@ -1,10 +1,11 @@
 package org.lnwza007.relay.service.nip01
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import jakarta.inject.Singleton
 import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX
-import org.lnwza007.relay.modules.TagElement
+import org.lnwza007.relay.modules.TagElt
 import org.slf4j.LoggerFactory
 
 @Singleton
@@ -12,9 +13,9 @@ object Transform : VerificationFactory() {
 
     private val LOG = LoggerFactory.getLogger(Transform::class.java)
 
-    private fun Map<String, JsonElement>.toTagMap(): Map<TagElement, Set<String>> {
+    private fun Map<String, JsonElement>.toTagMap(): Map<TagElt, Set<String>> {
         return this.filterKeys { it.startsWith("#") }
-            .mapKeys { (key, _) -> TagElement.valueOf(key.removePrefix("#")) }
+            .mapKeys { (key, _) -> TagElt.valueOf(key.removePrefix("#")) }
             .mapValues { (_, value) ->
                 value.jsonArray.mapNotNull { it.jsonPrimitive.contentOrNull }.toSet()
             }
@@ -37,13 +38,31 @@ object Transform : VerificationFactory() {
     fun convertToEventObject(field: Map<String, JsonElement>): Event {
         return Event(
             id = field["id"]?.jsonPrimitive?.contentOrNull,
-            pubkey = field["pubkey"]?.jsonPrimitive?.contentOrNull,
+            pubKey = field["pubkey"]?.jsonPrimitive?.contentOrNull,
             createAt = field["created_at"]?.jsonPrimitive?.longOrNull,
             kind = field["kind"]?.jsonPrimitive?.longOrNull,
             tags = field["tags"]?.jsonArray?.map { it.jsonArray.map { tag -> tag.jsonPrimitive.content } },
             content = field["content"]?.jsonPrimitive?.contentOrNull,
             signature = field["sig"]?.jsonPrimitive?.contentOrNull
         )
+    }
+
+    /**
+     * ฟังก์ชัน toJsonString ใช้ในการแปลงข้อมูลใดๆเป็นสตริง JSON
+     * @return สตริง JSON ที่เป็นผลลัพธ์จากการแปลง Object
+     */
+    fun Any.toJsonString(): String {
+        return jacksonObjectMapper().writeValueAsString(this)
+    }
+
+    /**
+     * ฟังก์ชัน toJsonElementMap ใช้ในการแปลงสตริง JSON เป็น Map ของ JsonElement
+     * @return Map ของ JsonElement ที่เป็นผลลัพธ์จากการแปลงสตริง JSON
+     */
+    fun String.toJsonElementMap(): Map<String, JsonElement> {
+        val option = Json { isLenient = true }
+        val jsonElement = option.parseToJsonElement(this)
+        return jsonElement.jsonObject
     }
 
     fun Map<String, JsonElement>.toFiltersX(): FiltersX {

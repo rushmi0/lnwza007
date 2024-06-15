@@ -2,7 +2,7 @@ package org.lnwza007.relay.service.nip01.response
 
 import io.micronaut.websocket.WebSocketSession
 import org.lnwza007.relay.modules.Event
-import org.lnwza007.util.ShiftTo.toJsonString
+import org.lnwza007.relay.service.nip01.Transform.toJsonString
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

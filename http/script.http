@@ -209,11 +209,17 @@ Content-Type: application/json
 
 ["REQ","NL8B4QXaHY1TNG8sfe1vT",{"#p":["3425e3a156471426798b80c1da1f148343c5c5b4d2ac452d3330a91b4619af65"],"kinds":[1,6,16,7,9735,2004,30023],"limit":50}]
 
-###
+### +
 WEBSOCKET ws://localhost:6624
 Content-Type: application/json
 
-["REQ","XRgo-m3j15alOkwZKi8vU",{"kinds":[0],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},{"kinds":[3],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},{"kinds":[10000],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},{"kinds":[10002],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},{"kinds":[10030],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},{"kinds":[30078],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"],"#d":["nostrudel-settings"]}]
+["REQ","XRgo-m3j15alOkwZKi8vU",
+  {"kinds":[0],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},
+  {"kinds":[3],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},
+  {"kinds":[10000],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},
+  {"kinds":[10002],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},
+  {"kinds":[10030],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"]},
+  {"kinds":[30078],"authors":["e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"],"#d":["nostrudel-settings"]}]
 
 ###
 # ทดสอบให้แจ้งปัญหา
@@ -228,6 +234,23 @@ Content-Type: application/json
     "#p": ["161498ed3277aa583c301288de5aafda4f317d2bf1ad0a880198a9dede37a6aa"]
   }
 ]
+
+
+###
+WEBSOCKET ws://localhost:6624
+Content-Type: application/json
+
+[
+  "REQ",
+  "uuuuu",
+  {
+    "authors": [
+      "e4b2c64f0e4e54abb34d5624cd040e05ecc77f0c467cc46e2cc4d5be98abe3e3"
+    ],
+    "limit": 2
+  }
+]
+
 
 
 ###
@@ -253,7 +276,7 @@ Content-Type: application/json
   "REQ",
   "FavDpMq9QkV28wJuQpHvv",
   {
-    "#x":["ad4d6d3961af8c32ad8e9239a8c7f07450e9de0ffd239acd262d7b7713bf030b"],
+    "#e":["ad4d6d3961af8c32ad8e9239a8c7f07450e9de0ffd239acd262d7b7713bf030b"],
     "kinds":[1,6,16,7,9735,2004,30023],
     "limit":50
   }
