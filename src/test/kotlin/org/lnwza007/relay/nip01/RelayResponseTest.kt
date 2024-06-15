@@ -6,8 +6,8 @@ import org.lnwza007.relay.modules.Event
 import org.mockito.Mockito.*
 import org.mockito.ArgumentCaptor
 import io.micronaut.websocket.WebSocketSession
+import org.lnwza007.relay.service.nip01.Transform.toJsonString
 import org.lnwza007.relay.service.nip01.response.RelayResponse
-import org.lnwza007.util.ShiftTo.toJsonString
 
 class RelayResponseTest {
 

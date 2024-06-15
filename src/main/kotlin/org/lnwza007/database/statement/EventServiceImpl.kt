@@ -144,7 +144,6 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
                 query.fetch().map { record ->
                     Event(
                         id = record[EVENT.EVENT_ID],
-
                         pubKey = record[EVENT.PUBKEY],
                         createAt = record[EVENT.CREATED_AT].toLong(),
                         kind = record[EVENT.KIND].toLong(),
