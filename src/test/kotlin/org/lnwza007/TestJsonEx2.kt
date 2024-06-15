@@ -4,8 +4,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
-import org.lnwza007.relay.modules.Event
-import org.lnwza007.util.ShiftTo.toJsonString
+import org.lnwza007.relay.service.nip01.Transform.toJsonString
 
 
 @Serializable(with = NostrResponseSerializer::class)

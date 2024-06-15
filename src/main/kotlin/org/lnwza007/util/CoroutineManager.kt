@@ -3,7 +3,6 @@ package org.lnwza007.util
 import io.micronaut.context.annotation.Factory
 import kotlinx.coroutines.*
 
-
 @Factory
 @OptIn(ExperimentalCoroutinesApi::class)
 object CoroutineManager {

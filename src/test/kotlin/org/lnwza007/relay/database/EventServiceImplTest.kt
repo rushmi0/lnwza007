@@ -9,7 +9,7 @@ import org.junit.jupiter.api.*
 import org.lnwza007.database.statement.EventServiceImpl
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.service.nip01.Transform.toEvent
-import org.lnwza007.util.ShiftTo.toJsonElementMap
+import org.lnwza007.relay.service.nip01.Transform.toJsonElementMap
 
 import java.sql.Connection
 import java.sql.DriverManager

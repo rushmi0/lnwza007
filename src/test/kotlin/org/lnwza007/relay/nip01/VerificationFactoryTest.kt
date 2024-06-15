@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
+import org.lnwza007.relay.service.nip01.Transform.toJsonElementMap
 import org.lnwza007.relay.service.nip01.VerificationFactory
-import org.lnwza007.util.ShiftTo.toJsonElementMap
 
 class VerificationFactoryTest {
 

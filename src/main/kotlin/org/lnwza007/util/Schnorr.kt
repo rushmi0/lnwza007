@@ -1,27 +1,10 @@
 package org.lnwza007.util
 
 import fr.acinq.secp256k1.Secp256k1
-import jakarta.inject.Singleton
 import org.lnwza007.util.ShiftTo.fromHex
 import org.lnwza007.util.ShiftTo.toHex
 
-@Singleton
 object Schnorr {
-
-    /**
-     * ฟังก์ชัน sign ใช้ในการสร้างลายเซ็น Schnorr สำหรับข้อมูลที่กำหนด
-     * @param data ข้อมูลที่ต้องการลงลายเซ็น
-     * @param privateKey คีย์ส่วนตัวที่ใช้ในการลงลายเซ็น
-     * @param aux ข้อมูลเสริม (ถ้ามี) ที่ใช้ในการเพิ่มความปลอดภัย
-     * @return ลายเซ็น Schnorr ที่ถูกสร้างขึ้นในรูปแบบ String (hex)
-     */
-    fun sign(
-        data: String,
-        privateKey: String,
-        aux: ByteArray? = null
-    ): String {
-        return Secp256k1.signSchnorr(data.fromHex(), privateKey.fromHex(), aux).toHex()
-    }
 
     /**
      * ฟังก์ชัน verify ใช้ในการตรวจสอบความถูกต้องของลายเซ็น Schnorr
@@ -38,6 +21,21 @@ object Schnorr {
         return Secp256k1.verifySchnorr(signature.fromHex(), data.fromHex(), publicKey.fromHex())
     }
 
+
+    /**
+     * ฟังก์ชัน sign ใช้ในการสร้างลายเซ็น Schnorr สำหรับข้อมูลที่กำหนด
+     * @param data ข้อมูลที่ต้องการลงลายเซ็น
+     * @param privateKey คีย์ส่วนตัวที่ใช้ในการลงลายเซ็น
+     * @param aux ข้อมูลเสริม (ถ้ามี) ที่ใช้ในการเพิ่มความปลอดภัย
+     * @return ลายเซ็น Schnorr ที่ถูกสร้างขึ้นในรูปแบบ String (hex)
+     */
+    fun sign(
+        data: String,
+        privateKey: String,
+        aux: ByteArray? = null
+    ): String {
+        return Secp256k1.signSchnorr(data.fromHex(), privateKey.fromHex(), aux).toHex()
+    }
 
 }
 
