@@ -122,6 +122,19 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
     override suspend fun filterList(filters: FiltersX): List<Event> {
         return parallelIO(64) {
             Single.fromCallable {
+
+                /**
+                 * SELECT * FROM EVENT
+                 * WHERE EVENT.EVENT_ID IN (:ids)
+                 *   AND EVENT.PUBKEY IN (:authors)
+                 *   AND EVENT.KIND IN (:kinds)
+                 *   AND (EVENT.TAGS @> '[["key1","value1"]]') OR (EVENT.TAGS @> '[["key2","value2"]]') OR ...
+                 *   AND EVENT.CREATED_AT >= :since
+                 *   AND EVENT.CREATED_AT <= :until
+                 *   AND EVENT.CONTENT LIKE :search
+                 *   LIMIT :limit
+                 */
+
                 val query = enforceSQL.selectFrom(EVENT)
 
                 filters.ids.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.EVENT_ID.`in`(it)) }
