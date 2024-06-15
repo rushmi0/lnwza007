@@ -92,6 +92,11 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
     override suspend fun selectById(id: String): Event? {
         return parallelIO(64) {
 
+            /**
+             * SELECT * FROM event
+             * WHERE event_id = :id
+             */
+
             val record = enforceSQL.selectFrom(EVENT)
                 .where(EVENT.EVENT_ID.eq(DSL.`val`(id)))
                 .fetchOne()
