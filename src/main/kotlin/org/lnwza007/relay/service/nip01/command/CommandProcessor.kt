@@ -7,7 +7,7 @@ import org.lnwza007.relay.policy.EventValidateField
 import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.service.nip01.Transform.convertToFiltersXObject
 import org.lnwza007.relay.service.nip01.Transform.toEvent
-import org.lnwza007.relay.service.nip01.Transform.validateJsonElement
+import org.lnwza007.relay.service.nip01.Transform.validateElement
 
 /**
  * CommandProcessor เป็นอ็อบเจกต์ที่ใช้ในการประมวลผลคำสั่งที่ส่งมาจากไคลเอนต์
@@ -54,7 +54,7 @@ object CommandProcessor {
         val event: Event = eventJson.toEvent()
         val data: Map<String, JsonElement> = eventJson.toMap()
 
-        val (status, warning) = validateJsonElement(data, EventValidateField.entries.toTypedArray())
+        val (status, warning) = validateElement(data, EventValidateField.entries.toTypedArray())
         return EVENT(event) to (status to warning)
     }
 
@@ -75,7 +75,7 @@ object CommandProcessor {
 
         val filtersX: List<FiltersX> = filtersJson.map { convertToFiltersXObject(it.jsonObject) }
 
-        val (status, warning) = validateJsonElement(data, FiltersXValidateField.entries.toTypedArray())
+        val (status, warning) = validateElement(data, FiltersXValidateField.entries.toTypedArray())
         return REQ(subscriptionId, filtersX) to (status to warning)
     }
 

@@ -1,6 +1,5 @@
 package org.lnwza007.relay.modules
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable

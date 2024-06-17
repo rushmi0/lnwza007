@@ -8,12 +8,14 @@ import org.lnwza007.relay.policy.FiltersXValidateField
 import org.lnwza007.relay.policy.NostrField
 import org.lnwza007.relay.service.nip01.Transform.convertToEventObject
 import org.lnwza007.relay.service.nip01.Transform.convertToFiltersXObject
+import org.lnwza007.relay.service.nip01.VerifyEvent.isValidEventId
+import org.lnwza007.relay.service.nip01.VerifyEvent.isValidSignature
 import org.slf4j.LoggerFactory
 
 @Singleton
 open class VerificationFactory {
 
-    fun validateJsonElement(
+    fun validateElement(
         receive: Map<String, JsonElement>,
         relayPolicy: Array<out NostrField>
     ): Pair<Boolean, String> {
@@ -124,14 +126,14 @@ open class VerificationFactory {
     private fun validateEvent(receive: Map<String, JsonElement>): Pair<Boolean, String> {
         val event = convertToEventObject(receive)
 
-        val (isValidId, actualId) = VerifyEvent(event).isValidEventId()
+        val (isValidId, actualId) = event.isValidEventId()
         if (!isValidId) {
             val warning = "Invalid: actual event id $actualId"
             LOG.info(warning)
             return Pair(false, warning)
         }
 
-        val (isValidSignature, signatureWarning) = VerifyEvent(event).isValidSignature()
+        val (isValidSignature, signatureWarning) = event.isValidSignature()
         if (!isValidSignature) {
             LOG.info(signatureWarning)
             return Pair(false, signatureWarning)

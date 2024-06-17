@@ -101,7 +101,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
             val record = enforceSQL.selectFrom(EVENT)
                 .where(EVENT.EVENT_ID.eq(DSL.`val`(id)))
                 .fetchOne()
-
+            LOG.info("\n$record")
             if (record != null) {
                 Event(
                     id = record[EVENT.EVENT_ID],
@@ -120,84 +120,92 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
     }
 
 
-    /*
     override suspend fun filterList(filters: FiltersX): List<Event> {
         return parallelIO(100) {
             Single.fromCallable {
 
                 /**
+                 * สร้างคำสั่ง SQL สำหรับการดึงข้อมูลจากตาราง EVENT โดยพิจารณาจากตัวกรองที่ได้รับ
                  * SELECT * FROM EVENT
-                 * WHERE EVENT.EVENT_ID IN (:ids)
+                 * WHERE
+                 *   EVENT.EVENT_ID IN (:ids)
                  *   AND EVENT.PUBKEY IN (:authors)
                  *   AND EVENT.KIND IN (:kinds)
-                 *   AND (EVENT.TAGS @> '[["key1","value1"]]') OR (EVENT.TAGS @> '[["key2","value2"]]') OR ...
+                 *   AND (jsonb_field ->> 'key' IN (:values) AND jsonb_field ->> 'key2' IN (:values2) ...)
                  *   AND EVENT.CREATED_AT >= :since
                  *   AND EVENT.CREATED_AT <= :until
-                 *   AND EVENT.CONTENT LIKE :search
-                 *   LIMIT :limit
+                 *   AND to_tsvector('simple', EVENT.CONTENT) @@ plainto_tsquery('simple', :search)
+                 * LIMIT :limit
                  */
 
+                // สร้างคำสั่ง SELECT ขึ้นมาโดยเลือกข้อมูลทั้งหมดจากตาราง EVENT
                 val query: SelectWhereStep<EventRecord> = enforceSQL.selectFrom(EVENT)
 
+                // ถ้ามีการระบุ ids ใน filters ให้เพิ่มเงื่อนไขการค้นหา EVENT_ID ใน ids ที่กำหนด
                 filters.ids.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.EVENT_ID.`in`(it)) }
+
+                // ถ้ามีการระบุ authors ใน filters ให้เพิ่มเงื่อนไขการค้นหา PUBKEY ใน authors ที่กำหนด
                 filters.authors.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.PUBKEY.`in`(it)) }
+
+                // ถ้ามีการระบุ kinds ใน filters ให้เพิ่มเงื่อนไขการค้นหา KIND ใน kinds ที่กำหนด
                 filters.kinds.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.KIND.`in`(it)) }
+
+                // ถ้ามีการระบุ tags ใน filters ให้เพิ่มเงื่อนไขการค้นหา TAGS ที่ตรงกับค่าที่กำหนด
                 filters.tags.forEach { (key, values) ->
-                    // Use @> operator for JSONB containment check
                     values.forEach { value ->
-                        val sqlString = "{0} @> {1}::jsonb"
-                        val jsonValue = DSL.field(sqlString, Boolean::class.java, EVENT.TAGS, DSL.inline("""[["${key.tag}","$value"]]""", SQLDataType.JSONB))
+                        /**
+                         * สร้างเงื่อนไขการค้นหาสำหรับฟิลด์ TAGS ที่เป็นประเภท JSONB
+                         * โดยใช้ JSONB containment operator (@>) ใน PostgreSQL
+                         *
+                         * jsonValue ใช้ DSL.field เพื่อสร้างเงื่อนไขการค้นหา โดยใช้โครงสร้าง {0} @> {1}::jsonb
+                         * - {0} คือฟิลด์ TAGS ในตาราง EVENT
+                         * - {1} คือค่า JSON ที่ต้องการเช็คการครอบคลุม
+                         *
+                         * ตัวอย่าง JSON ที่ใช้เช็ค: [["key","value"]]
+                         * DSL.inline ใช้เพื่อแปลงสตริงเป็นประเภท JSONB ใน SQL
+                         */
+                        val jsonValue = DSL.field(
+                            "{0} @> {1}::jsonb",
+                            Boolean::class.java,
+                            EVENT.TAGS,
+                            DSL.inline("""[["${key.tag}","$value"]]""", SQLDataType.JSONB)
+                        )
                         query.where(jsonValue)
                     }
                 }
+
+                // ถ้ามีการระบุ since ใน filters ให้เพิ่มเงื่อนไขการค้นหา CREATED_AT ที่มีค่ามากกว่าหรือเท่ากับ since ที่กำหนด
                 filters.since?.let { query.where(EVENT.CREATED_AT.greaterOrEqual(it.toInt())) }
+
+                // ถ้ามีการระบุ until ใน filters ให้เพิ่มเงื่อนไขการค้นหา CREATED_AT ที่มีค่าน้อยกว่าหรือเท่ากับ until ที่กำหนด
                 filters.until?.let { query.where(EVENT.CREATED_AT.lessOrEqual(it.toInt())) }
-                filters.search?.let { query.where(EVENT.CONTENT.contains(it)) }
-                //filters.limit?.let { query.limit(it.toInt()) }
 
-                query.limit(filters.limit?.toInt() ?: 1_000)
-
-                LOG.info("$query")
-                query.fetch().map { record ->
-                    Event(
-                        id = record[EVENT.EVENT_ID],
-                        pubkey = record[EVENT.PUBKEY],
-                        created_at = record[EVENT.CREATED_AT].toLong(),
-                        kind = record[EVENT.KIND].toLong(),
-                        tags = Json.decodeFromString(record[EVENT.TAGS].toString()),
-                        content = record[EVENT.CONTENT],
-                        sig = record[EVENT.SIG]
-                    )
-                }
-            }.blockingGet()
-        }
-    }
-     */
-
-
-    override suspend fun filterList(filters: FiltersX): List<Event> {
-        return parallelIO(100) {
-            Single.fromCallable {
-                val query: SelectWhereStep<EventRecord> = enforceSQL.selectFrom(EVENT)
-
-                filters.ids.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.EVENT_ID.`in`(it)) }
-                filters.authors.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.PUBKEY.`in`(it)) }
-                filters.kinds.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.KIND.`in`(it)) }
-                filters.tags.forEach { (key, values) ->
-                    values.forEach { value ->
-                        val jsonValue = DSL.field("{0} @> {1}::jsonb", Boolean::class.java, EVENT.TAGS, DSL.inline("""[["${key.tag}","$value"]]""", SQLDataType.JSONB))
-                        query.where(jsonValue)
-                    }
-                }
-                filters.since?.let { query.where(EVENT.CREATED_AT.greaterOrEqual(it.toInt())) }
-                filters.until?.let { query.where(EVENT.CREATED_AT.lessOrEqual(it.toInt())) }
+                // ถ้ามีการระบุ search ใน filters ให้เพิ่มเงื่อนไขการค้นหา CONTENT ที่ตรงกับ search ที่กำหนดโดยใช้ full-text search
                 filters.search?.let {
-                    val tsQuery = DSL.field("to_tsvector('simple', {0}) @@ plainto_tsquery('simple', {1})", Boolean::class.java, EVENT.CONTENT, DSL.inline(it))
-                    query.where(tsQuery)
+                    /**
+                     * สร้างเงื่อนไขการค้นหาสำหรับฟิลด์ CONTENT โดยใช้ full-text search ใน PostgreSQL
+                     *
+                     * textSearchQuery ใช้ DSL.field เพื่อสร้างเงื่อนไขการค้นหา โดยใช้โครงสร้าง to_tsvector('simple', {0}) @@ plainto_tsquery('simple', {1})
+                     * - {0} คือฟิลด์ CONTENT ในตาราง EVENT
+                     * - {1} คือข้อความที่ต้องการค้นหา
+                     *
+                     * - to_tsvector ใช้แปลงข้อความในฟิลด์ CONTENT เป็นเวกเตอร์ของคำ
+                     * - plainto_tsquery ใช้แปลงข้อความค้นหาเป็น text search query object
+                     * - @@ เป็น operator ที่ใช้เช็คว่า text search query object นั้นๆ ตรงกันกับ to_tsvector หรือไม่
+                     */
+                    val textSearchQuery = DSL.field(
+                        "to_tsvector('simple', {0}) @@ plainto_tsquery('simple', {1})",
+                        Boolean::class.java,
+                        EVENT.CONTENT,
+                        DSL.inline(it)
+                    )
+                    query.where(textSearchQuery)
                 }
-                query.limit(filters.limit?.toInt() ?: 1_000)
 
-                LOG.info("$query")
+                // กำหนด limit ของการดึงข้อมูล ถ้า filters.limit เป็น null ให้ใช้ค่าเริ่มต้นเป็น 1,700 record
+                query.limit(filters.limit?.toInt() ?: 1_700)
+
+                // ดำเนินการ fetch ข้อมูลตามเงื่อนไขที่กำหนดแล้ว map ข้อมูลที่ได้มาเป็น Event objects
                 query.fetch().map { record ->
                     Event(
                         id = record[EVENT.EVENT_ID],
@@ -212,6 +220,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
             }.blockingGet()
         }
     }
+
 
 
     companion object {
