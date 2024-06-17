@@ -13,7 +13,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Controller("/genkey")
-class KeyGenerationController {
+class NostrKey {
 
     @Serializable
     @Deserializable
@@ -28,48 +28,52 @@ class KeyGenerationController {
     @Get("/npub/{require}")
     suspend fun generateNpubKey(@PathVariable require: String): GenerateKey {
         LOG.info("Generating npub key")
+        val worker = 1_000_000_000
 
-        // สร้าง coroutineScope เพื่อรวม coroutine ทั้งหมด
-        return coroutineScope {
+        return CoroutineManager.parallelIO(worker) {
             val jobList = mutableListOf<Deferred<GenerateKey>>()
 
-            // สร้างและเริ่ม coroutine หลายๆ ตัว
-            repeat(10_000) {
+            repeat(worker) {
                 val job = async { generateNpubKeyCoroutine(require) }
                 jobList.add(job)
             }
 
-            // รอผลลัพธ์จากทุก coroutine และเก็บผลลัพธ์ลงใน List
             val resultList = jobList.awaitAll()
 
-            // ค้นหาผลลัพธ์ที่ตรงกับเงื่อนไข
             resultList.first { it.npub.startsWith(require) }
         }
     }
 
+
     private fun generateNpubKeyCoroutine(require: String): GenerateKey {
         var attempts = 0
+        LOG.info("Starting generation coroutine")
+
         while (true) {
-            val privkey: ByteArray = randomBytes(32)
+            val privkey = randomBytes(32)
             val pubkeys = Secp256k1.pubkeyCreate(privkey)
             val compressed = Secp256k1.pubKeyCompress(pubkeys)
             val xOnly = compressed.copyOfRange(1, 33)
             val npub = Bech32.encode("npub", xOnly.toHex())
             attempts++
-            LOG.info("npub: $npub")
+            LOG.info("[$attempts] npub: $npub")
 
             if (npub.startsWith(require)) {
-                return GenerateKey(
+                val result =  GenerateKey(
                     privkey = privkey.toHex(),
                     xOnly = xOnly.toHex(),
                     npub = npub,
                     attempts = attempts.toLong()
                 )
+
+                LOG.info("Coroutine finished successfully\n$result")
+                return result
             }
         }
     }
 
+
     companion object {
-        private val LOG: Logger = LoggerFactory.getLogger(KeyGenerationController::class.java)
+        private val LOG: Logger = LoggerFactory.getLogger(NostrKey::class.java)
     }
 }
