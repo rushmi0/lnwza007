@@ -3,11 +3,12 @@ package org.lnwza007.database.statement
 
 import io.reactivex.rxjava3.core.Single
 import jakarta.inject.Inject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import nostr.relay.infra.database.tables.Event.EVENT
+import nostr.relay.infra.database.tables.records.EventRecord
 import org.jooq.DSLContext
+import org.jooq.SelectWhereStep
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.lnwza007.database.service.EventService
@@ -42,12 +43,12 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
                     EVENT.SIG
                 ).values(
                     DSL.`val`(event.id).cast(SQLDataType.VARCHAR.length(64)),
-                    DSL.`val`(event.pubKey).cast(SQLDataType.VARCHAR.length(64)),
-                    DSL.`val`(event.createAt).cast(SQLDataType.INTEGER),
+                    DSL.`val`(event.pubkey).cast(SQLDataType.VARCHAR.length(64)),
+                    DSL.`val`(event.created_at).cast(SQLDataType.INTEGER),
                     DSL.`val`(event.kind).cast(SQLDataType.INTEGER),
                     DSL.`val`(Json.encodeToString(event.tags)).cast(SQLDataType.JSONB),
                     DSL.`val`(event.content).cast(SQLDataType.CLOB),
-                    DSL.`val`(event.signature).cast(SQLDataType.VARCHAR.length(128))
+                    DSL.`val`(event.sig).cast(SQLDataType.VARCHAR.length(128))
                 ).execute() > 0
             }
                 .doOnSuccess { result ->
@@ -104,12 +105,12 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
             if (record != null) {
                 Event(
                     id = record[EVENT.EVENT_ID],
-                    pubKey = record[EVENT.PUBKEY],
-                    createAt = record[EVENT.CREATED_AT].toLong(),
+                    pubkey = record[EVENT.PUBKEY],
+                    created_at = record[EVENT.CREATED_AT].toLong(),
                     kind = record[EVENT.KIND].toLong(),
                     tags = Json.decodeFromString<List<List<String>>>(record[EVENT.TAGS].toString()),
                     content = record[EVENT.CONTENT],
-                    signature = record[EVENT.SIG]
+                    sig = record[EVENT.SIG]
                 )
             } else {
                 LOG.info("Event not found for ID: $id")
@@ -119,6 +120,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
     }
 
 
+    /*
     override suspend fun filterList(filters: FiltersX): List<Event> {
         return parallelIO(100) {
             Single.fromCallable {
@@ -135,7 +137,7 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
                  *   LIMIT :limit
                  */
 
-                val query = enforceSQL.selectFrom(EVENT)
+                val query: SelectWhereStep<EventRecord> = enforceSQL.selectFrom(EVENT)
 
                 filters.ids.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.EVENT_ID.`in`(it)) }
                 filters.authors.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.PUBKEY.`in`(it)) }
@@ -151,23 +153,66 @@ class EventServiceImpl @Inject constructor(private val enforceSQL: DSLContext) :
                 filters.since?.let { query.where(EVENT.CREATED_AT.greaterOrEqual(it.toInt())) }
                 filters.until?.let { query.where(EVENT.CREATED_AT.lessOrEqual(it.toInt())) }
                 filters.search?.let { query.where(EVENT.CONTENT.contains(it)) }
-                filters.limit?.let { query.limit(it.toInt()) }
+                //filters.limit?.let { query.limit(it.toInt()) }
+
+                query.limit(filters.limit?.toInt() ?: 1_000)
 
                 LOG.info("$query")
                 query.fetch().map { record ->
                     Event(
                         id = record[EVENT.EVENT_ID],
-                        pubKey = record[EVENT.PUBKEY],
-                        createAt = record[EVENT.CREATED_AT].toLong(),
+                        pubkey = record[EVENT.PUBKEY],
+                        created_at = record[EVENT.CREATED_AT].toLong(),
                         kind = record[EVENT.KIND].toLong(),
                         tags = Json.decodeFromString(record[EVENT.TAGS].toString()),
                         content = record[EVENT.CONTENT],
-                        signature = record[EVENT.SIG]
+                        sig = record[EVENT.SIG]
                     )
                 }
             }.blockingGet()
         }
     }
+     */
+
+
+    override suspend fun filterList(filters: FiltersX): List<Event> {
+        return parallelIO(100) {
+            Single.fromCallable {
+                val query: SelectWhereStep<EventRecord> = enforceSQL.selectFrom(EVENT)
+
+                filters.ids.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.EVENT_ID.`in`(it)) }
+                filters.authors.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.PUBKEY.`in`(it)) }
+                filters.kinds.takeIf { it.isNotEmpty() }?.let { query.where(EVENT.KIND.`in`(it)) }
+                filters.tags.forEach { (key, values) ->
+                    values.forEach { value ->
+                        val jsonValue = DSL.field("{0} @> {1}::jsonb", Boolean::class.java, EVENT.TAGS, DSL.inline("""[["${key.tag}","$value"]]""", SQLDataType.JSONB))
+                        query.where(jsonValue)
+                    }
+                }
+                filters.since?.let { query.where(EVENT.CREATED_AT.greaterOrEqual(it.toInt())) }
+                filters.until?.let { query.where(EVENT.CREATED_AT.lessOrEqual(it.toInt())) }
+                filters.search?.let {
+                    val tsQuery = DSL.field("to_tsvector('simple', {0}) @@ plainto_tsquery('simple', {1})", Boolean::class.java, EVENT.CONTENT, DSL.inline(it))
+                    query.where(tsQuery)
+                }
+                query.limit(filters.limit?.toInt() ?: 1_000)
+
+                LOG.info("$query")
+                query.fetch().map { record ->
+                    Event(
+                        id = record[EVENT.EVENT_ID],
+                        pubkey = record[EVENT.PUBKEY],
+                        created_at = record[EVENT.CREATED_AT].toLong(),
+                        kind = record[EVENT.KIND].toLong(),
+                        tags = Json.decodeFromString(record[EVENT.TAGS].toString()),
+                        content = record[EVENT.CONTENT],
+                        sig = record[EVENT.SIG]
+                    )
+                }
+            }.blockingGet()
+        }
+    }
+
 
     companion object {
         private val LOG = LoggerFactory.getLogger(EventServiceImpl::class.java)

@@ -2,6 +2,8 @@ package org.lnwza007.relay.service.nip01
 
 import io.micronaut.websocket.WebSocketSession
 import jakarta.inject.Inject
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.lnwza007.database.statement.EventServiceImpl
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.modules.FiltersX

@@ -1,8 +1,6 @@
 package org.lnwza007.util
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import fr.acinq.secp256k1.Hex
-import kotlinx.serialization.json.*
 import org.lnwza007.relay.modules.Event
 import org.lnwza007.relay.service.nip01.Transform.toJsonString
 import java.security.MessageDigest
@@ -51,8 +49,8 @@ object ShiftTo {
         return lazy {
             arrayListOf(
                 0,
-                event.pubKey,
-                event.createAt,
+                event.pubkey,
+                event.created_at,
                 event.kind,
                 event.tags,
                 event.content

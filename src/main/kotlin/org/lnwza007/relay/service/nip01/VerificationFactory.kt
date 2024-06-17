@@ -124,14 +124,14 @@ open class VerificationFactory {
     private fun validateEvent(receive: Map<String, JsonElement>): Pair<Boolean, String> {
         val event = convertToEventObject(receive)
 
-        val (isValidId, actualId) = event.isValidEventId()
+        val (isValidId, actualId) = VerifyEvent(event).isValidEventId()
         if (!isValidId) {
             val warning = "Invalid: actual event id $actualId"
             LOG.info(warning)
             return Pair(false, warning)
         }
 
-        val (isValidSignature, signatureWarning) = event.isValidSignature()
+        val (isValidSignature, signatureWarning) = VerifyEvent(event).isValidSignature()
         if (!isValidSignature) {
             LOG.info(signatureWarning)
             return Pair(false, signatureWarning)

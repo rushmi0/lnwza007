@@ -38,12 +38,12 @@ object Transform : VerificationFactory() {
     fun convertToEventObject(field: Map<String, JsonElement>): Event {
         return Event(
             id = field["id"]?.jsonPrimitive?.contentOrNull,
-            pubKey = field["pubkey"]?.jsonPrimitive?.contentOrNull,
-            createAt = field["created_at"]?.jsonPrimitive?.longOrNull,
+            pubkey = field["pubkey"]?.jsonPrimitive?.contentOrNull,
+            created_at = field["created_at"]?.jsonPrimitive?.longOrNull,
             kind = field["kind"]?.jsonPrimitive?.longOrNull,
             tags = field["tags"]?.jsonArray?.map { it.jsonArray.map { tag -> tag.jsonPrimitive.content } },
             content = field["content"]?.jsonPrimitive?.contentOrNull,
-            signature = field["sig"]?.jsonPrimitive?.contentOrNull
+            sig = field["sig"]?.jsonPrimitive?.contentOrNull
         )
     }
 
