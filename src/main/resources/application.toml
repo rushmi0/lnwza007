@@ -1,0 +1,78 @@
+micronaut.application.name = 'fenrir-s'
+
+[micronaut.server]
+cors.enabled = true
+cors.localhost-pass-through = true
+maxRequestSize = "512KB"
+#host = "localhost"
+port = 6724
+
+[micronaut.executors.scheduled]
+type = "scheduled"
+virtual = true
+parallelism = 32
+core-pool-size = 16
+
+
+#################################################################################
+
+[nostr.relay.info]
+name = ""
+description = ""
+npub = ""
+contact = ""
+
+[nostr.relay.policy]
+all-pass = true
+follows-pass = false
+
+[nostr.relay.policy.proof-of-work]
+enabled = false
+difficulty-minimum = 32
+
+[nostr.relay.database.backup]
+enabled = false
+sync = [
+    "wss://relay.notoshi.win",
+    "wss://relay.siamstr.com",
+    "wss://relay.damus.io",
+    "wss://relay.nostr.band",
+    "wss://nostr-01.yakihonne.com",
+    "wss://nos.lol",
+    "wss://purplerelay.com"
+]
+
+
+#################################################################################
+
+[jooq.datasources.default]
+sql-dialect = "postgres"
+
+[datasources.default]
+#jdbc-url = "jdbc:postgresql://localhost:5432/nostr"
+jdbc-url = "jdbc:postgresql://relay-db:5432/nostr"
+driver-class-name = "org.postgresql.Driver"
+username = "rushmi0"
+password = "sql@min"
+db-type = "postgres"
+
+## Hikari Connection Pooling ##
+minimum-idle = 2
+maximum-pool-size = 5
+idle-timeout = 60000
+transaction-isolation = "TRANSACTION_REPEATABLE_READ"
+keepalive-time = 60000
+max-lifetime = 2000000
+leak-detection-threshold = 30000
+validation-timeout = 3000
+
+[redis]
+#uri = "redis://localhost:6379"
+uri = "redis://relay-cache:6379"
+timeout = "45m"
+io-thread-pool-size = 2
+computation-thread-pool-size = 2
+
+[micronaut.router.static-resources.default]
+mapping = "/**"
+paths = ["classpath:public/"]

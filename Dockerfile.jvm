@@ -1,0 +1,12 @@
+FROM gradle:jdk21 AS build
+WORKDIR /app
+COPY . .
+RUN apt-get update -y && apt-get upgrade -y && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN ./gradlew build
+
+FROM amazoncorretto:21.0.3
+WORKDIR /app
+COPY --from=build /app/build/libs/fenrir-s-0.1-all-optimized.jar ./
+EXPOSE 6724
+ENTRYPOINT ["java", "-jar", "fenrir-s-0.1-all-optimized.jar"]

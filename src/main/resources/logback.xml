@@ -10,7 +10,7 @@
         </encoder>
     </appender>
 
-    <logger name="org.lnwza007.*" level="INFO"/>
+    <logger name="org.fenrirs.*" level="INFO"/>
     <logger name="io.micronaut.http.client" level="TRACE"/>
     <!--    <Logger name="io.micronaut.context.condition" level="DEBUG"/>-->
 
@@ -18,9 +18,7 @@
     <!--    <logger name="io.micronaut.flyway" level="INFO"/>-->
     <!--    <logger name="com.zaxxer.hikari.pool" level="DEBUG"/>-->
 
-    <logger name="io.micronaut.http.client" level="TRACE"/>
-    <logger name="org.lnwza007.database.RedisCacheFactory" level="DEBUG"/>
-    <logger name="org.lnwza007.relay.Gateway" level="DEBUG"/>
+    <logger name="io.micronaut.http.HttpStatus" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

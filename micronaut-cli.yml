@@ -1,6 +1,6 @@
 applicationType: default
-defaultPackage: org.lnwza007
-testFramework: junit
+defaultPackage: org.fenrirs
+testFramework: kotest
 sourceLanguage: kotlin
 buildTool: gradle_kotlin
-features: [ app-name, graalvm, gradle, http-client-test, jdbc-hikari, jooq, junit, kotlin, kotlin-application, ksp, micronaut-aot, micronaut-build, micronaut-http-validation, netty-server, postgres, properties, readme, redis-lettuce, rxjava3, serialization-jackson, shade, slf4j-simple-logger, static-resources, test-resources ]
+features: [ app-name, gradle, http-client-test, jdbc-hikari, jooq, kotest, kotlin, kotlin-application, ksp, micronaut-aot, micronaut-build, micronaut-http-validation, netty-server, postgres, readme, rxjava3, serialization-jackson, shade, slf4j-simple-logger, static-resources, test-resources, toml, toml-build, websocket ]

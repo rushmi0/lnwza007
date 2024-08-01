@@ -1,2 +1,1 @@
-rootProject.name = "lnwza007"
-
+rootProject.name = "fenrir-s"
